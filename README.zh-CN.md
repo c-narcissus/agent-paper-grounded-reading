@@ -50,7 +50,7 @@
 把下面两个文件放在同一个目录：
 
 - `agent-paper-grounded-reading-main.zip`
-- 论文文件，例如 `paper.tar.gz`、`paper.pdf` 或 LaTeX 源码目录
+- 论文文件，目前主要支持LaTeX 源码- paper.tar.gz，pdf效果会差很多（如果在arxiv上搜索不到latex源码的话）
 
 如果是 LaTeX 源包，在 Codex 里可以直接这样说：
 
