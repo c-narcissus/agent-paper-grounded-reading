@@ -50,7 +50,7 @@ By default, the reading report covers these areas, with emphasis on how each par
 Put these in the same directory:
 
 - `agent-paper-grounded-reading-main.zip`
-- the paper file, such as `paper.tar.gz`, `paper.pdf`, or a local LaTeX source tree
+- Paper files are primarily supported in LaTeX source format (paper.tar.gz). If the LaTeX source cannot be found on arXiv, PDF-based results may be much worse.
 
 If the input is a LaTeX package, in Codex you can say:
 
