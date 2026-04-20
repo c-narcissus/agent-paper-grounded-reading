@@ -1,6 +1,10 @@
 # Agent Paper Grounded Reading
 
 [中文说明](./README.zh-CN.md)
+![preview](./1.JPG)
+<p align="center">
+  <img src="./1.jpg" alt="Agent Paper Grounded Reading Preview" width="900">
+</p>
 
 `agent-paper-grounded-reading` is a source-grounded paper reading skill for local AI agent tools such as Codex, Claude Code-style workflows, and other agent runtimes that can read files, run scripts, and write reusable artifacts.
 
@@ -62,6 +66,7 @@ local agent tool -> run the skill -> generate artifacts -> inspect/share outputs
 
 ```text
 agent-paper-grounded-reading/
+  1.jpg
   SKILL.md
   README.md
   README.zh-CN.md
