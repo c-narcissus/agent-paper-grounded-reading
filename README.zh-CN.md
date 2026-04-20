@@ -1,7 +1,7 @@
 # Agent Paper Grounded Reading
 
 [English README](./README.md)
-
+![preview](./1.JPG)
 `agent-paper-grounded-reading` 是一个面向本地 AI agent 工具的、基于原文证据的论文精读 skill，适用于 Codex、Claude Code 风格工作流，以及其他可以读取文件、执行脚本、生成可复用工件的本地 agent 环境。
 
 这个项目的定位不是“给网页聊天产品用的一段 prompt”，而是“给本地 agent 用的一整套论文精读工作流”。  
@@ -63,6 +63,7 @@
 
 ```text
 agent-paper-grounded-reading/
+  1.JPG
   SKILL.md
   README.md
   README.zh-CN.md
