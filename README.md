@@ -4,110 +4,64 @@
 
 ![preview](./1.JPG)
 
-A source-grounded paper reading skill for local AI agent workflows.
+`agent-paper-grounded-reading` is a deep-reading skill for local AI agent workflows.
 
-It produces not only a deep reading report, but also claim-to-evidence traceability artifacts and a static evidence reader for manual inspection.
+It is not designed as a plain paper summarizer. The goal is to produce grounded, auditable analysis that can be checked against original PDF / LaTeX evidence, including visual inspection in a static reader page.
 
-## What It Does
+## Deep Reading Outline and Focus
 
-This project helps an agent deeply read a paper and generate:
+By default, the reading report covers these areas, with emphasis on how each part supports or questions the paper's actual claims:
 
-- a human-readable report
-- stable claim IDs such as `C5.2`
-- claim-to-evidence mappings
-- LaTeX paragraph anchors
-- a static interactive reader
+1. **Paper identity and source package**
+   Clarifies title, authors, version, and which materials were actually used in the reading.
+2. **Title interpretation and real research problem**
+   Explains what the title terms mean and what problem the paper is really trying to solve.
+3. **Scientific problem ladder**
+   Expands from the direct task to higher-level research and broader AI / ML questions.
+4. **Related-work gap analysis**
+   Explains what the paper inherits, what it moves beyond, and what gap it is really filling.
+5. **Likely author reasoning path**
+   Reconstructs why the method was probably designed this way instead of only restating module names.
+6. **Symbols, concepts, and notation**
+   Introduces the key objects and notation before relying on formulas and algorithms.
+7. **Formulas and equation-level explanations**
+   Covers objectives, update rules, thresholds, generative targets, and what each formula does in the method.
+8. **Algorithm / module walkthrough**
+   Explains inputs, states, intermediate quantities, and outputs step by step.
+9. **Figure and table interpretation**
+   Explains what each figure or table is trying to support and whether it really supports that claim.
+10. **Experiment design and claim alignment**
+    Covers datasets, tasks, baselines, metrics, ablations, and whether the empirical evidence matches the paper's claims.
+11. **Reviewer-style audit**
+    Judges novelty, technical reliability, reproducibility, and result credibility.
+12. **Contribution strength**
+    Audits how strongly each claimed contribution is supported instead of treating all contributions equally.
+13. **Limitations and failure modes**
+    Points out where the method may break, which assumptions are strong, and which modules are costly or fragile.
+14. **Innovation type**
+    Judges whether the paper is incremental, recombinational, cross-directional, or more boundary-pushing.
+15. **Future directions**
+    Suggests stronger next steps and more decisive follow-up evaluations.
+16. **Vivid story summary**
+    Ends with a simple but faithful way to remember the paper's core idea.
 
-It is designed for **auditable paper reading**, not just summary generation.
+## Quick Use
 
-## Main Features
-
-- LaTeX-first reading when source is available
-- PDF fallback when LaTeX is unavailable
-- claim-level traceability
-- evidence completeness validation
-- static reader for report + PDF inspection
-
-## Best For
-
-- Codex
-- Claude Code-style local agent workflows
-- other local agent tools that can read files, run Python, and write artifacts
-
-## Quick Start
-
-### 1. Put the files in your project directory
-
-Place the following files in the same project directory:
+Put these in the same directory:
 
 - `agent-paper-grounded-reading-main.zip`
-- your paper source archive, for example `paper.tar.gz`
+- the paper file, such as `paper.tar.gz`, `paper.pdf`, or a local LaTeX source tree
 
-Example:
-
-```text
-your-project/
-  agent-paper-grounded-reading-main.zip
-  paper.tar.gz
-```
-
-### 2. Ask Codex to use the skill
-
-In Codex, simply say:
+If the input is a LaTeX package, in Codex you can say:
 
 ```text
-Please use the skill in agent-paper-grounded-reading-main.zip to perform a deep reading of the paper contained in paper.tar.gz (LaTeX source).
+Please use the skill in agent-paper-grounded-reading-main.zip to deeply read the paper in paper.tar.gz (latex).
 ```
 
-Replace `paper.tar.gz` with your actual file name.
-
-### 3. Check the outputs
-
-Typical outputs include:
+If the input is a PDF, you can say:
 
 ```text
-report.md
-traceability_manifest.json
-latex_paragraphs.json
-reader_artifacts.json
-paper_reader_app/
+Please use the skill in agent-paper-grounded-reading-main.zip to deeply read paper.pdf.
 ```
 
-## Outputs
-
-### `report.md`
-Human-readable deep reading report.
-
-### `traceability_manifest.json`
-Maps report claims to source evidence.
-
-### `latex_paragraphs.json`
-Stores extracted LaTeX paragraph anchors.
-
-### `reader_artifacts.json`
-Portable manifest for reader generation.
-
-### `paper_reader_app/`
-Static interactive evidence reader.
-
-## Build the Reader
-
-```bash
-python scripts/build_reader_bundle.py --artifact-manifest reader_artifacts.json
-python scripts/serve_bundle.py ./paper_reader_app --port 8765
-```
-
-## Requirements
-
-- Python 3.9+
-- Markdown>=3.6
-- PyMuPDF>=1.24.0
-
-Recommended:
-
-- pdflatex
-- synctex
-
-## Version
-
-`1.0.0`
+Replace `paper.tar.gz` or `paper.pdf` with the real filename.
