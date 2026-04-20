@@ -1,0 +1,23 @@
+{
+  "schema_version": "paper-storyboard/1.0",
+  "source_report": "report.md",
+  "style": "connected cartoon storyboard",
+  "panels": [
+    {
+      "panel_id": "S1",
+      "title": "<panel title>",
+      "report_claim_ids": ["C5.1"],
+      "visual_metaphor": "<recurring visual metaphor>",
+      "prompt": "<image-generation prompt grounded in the completed report>",
+      "image_path": "<generated image path when available>"
+    },
+    {
+      "panel_id": "S2",
+      "title": "<panel title>",
+      "report_claim_ids": ["C6.1"],
+      "visual_metaphor": "<same recurring world, character, or object>",
+      "prompt": "<image-generation prompt grounded in the completed report>",
+      "image_path": "<generated image path when available>"
+    }
+  ]
+}

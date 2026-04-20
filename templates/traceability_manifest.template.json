@@ -1,0 +1,30 @@
+{
+  "schema_version": "paper-traceability/1.0",
+  "paper": {
+    "title": "<paper title>",
+    "source_mode": "latex-primary",
+    "report_path": "<report markdown path>"
+  },
+  "claims": [
+    {
+      "claim_id": "C1.1",
+      "section_id": "1",
+      "section_title": "Paper Identification and Source Package Used",
+      "claim_text": "<anchored claim text copied from report>",
+      "evidence": [
+        {
+          "evidence_id": "E-C1.1-a",
+          "doc": "main",
+          "paragraph_id": "main.tex::p0001",
+          "quote": "<short UI-facing evidence summary>",
+          "relation": "direct",
+          "page_hint": 1,
+          "locator_snippets": [
+            "<snippet 1>",
+            "<snippet 2>"
+          ]
+        }
+      ]
+    }
+  ]
+}

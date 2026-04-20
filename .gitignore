@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+
+paper_reader_app/
+*.synctex
+*.synctex.gz
+*.aux
+*.log
+*.out

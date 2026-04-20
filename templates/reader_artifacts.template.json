@@ -1,0 +1,33 @@
+{
+  "schema_version": "paper-reader-artifacts/1.0",
+  "paper": {
+    "title": "<paper title>",
+    "source_mode": "latex-primary"
+  },
+  "report": {
+    "markdown": "report.md",
+    "pdf": "report.pdf"
+  },
+  "traceability_manifest": "traceability_manifest.json",
+  "latex_paragraphs": "latex_paragraphs.json",
+  "documents": [
+    {
+      "doc": "main",
+      "label": "Main Paper",
+      "pdf": "main.pdf",
+      "synctex": "main.synctex.gz"
+    },
+    {
+      "doc": "supplementary",
+      "label": "Supplementary",
+      "pdf": "supplementary.pdf",
+      "synctex": "supplementary.synctex.gz"
+    }
+  ],
+  "storyboard": {
+    "manifest": "storyboard_manifest.json",
+    "prompts": "storyboard_prompts.md",
+    "images": []
+  },
+  "reader_output": "paper_reader_app"
+}

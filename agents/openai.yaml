@@ -1,0 +1,5 @@
+interface:
+  display_name: "Agent Paper Grounded Reading"
+  short_description: "Grounded paper reading for local AI agent workflows."
+  brand_color: "#0F766E"
+  default_prompt: "Use $agent-paper-grounded-reading to read this paper deeply and produce a grounded report with evidence artifacts."

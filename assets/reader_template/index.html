@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Paper Evidence Reader</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="title-group">
+        <h1 id="app-title">Paper Evidence Reader</h1>
+        <p id="app-subtitle">Click a report claim to inspect its paper evidence.</p>
+      </div>
+      <nav class="asset-links" id="asset-links"></nav>
+    </header>
+
+    <main class="split-layout">
+      <section class="pane pane-pdf">
+        <div class="pane-toolbar">
+          <div class="doc-switch" id="doc-switch"></div>
+          <div class="pdf-toolbar-right">
+            <div class="pdf-zoom-controls" aria-label="PDF zoom controls">
+              <button type="button" id="zoom-out" title="Zoom out">-</button>
+              <button type="button" id="zoom-fit" title="Fit one full page">Fit</button>
+              <button type="button" id="zoom-in" title="Zoom in">+</button>
+              <span id="zoom-label">100%</span>
+            </div>
+            <div class="pdf-status" id="pdf-status">Loading document pages...</div>
+          </div>
+        </div>
+        <div class="evidence-panel" id="evidence-panel">
+          <div class="evidence-panel__header">
+            <strong>Evidence</strong>
+            <span id="active-claim-label">No claim selected</span>
+          </div>
+          <div class="evidence-panel__body" id="evidence-list">
+            <p class="muted">Select a claim on the right to inspect its supporting evidence.</p>
+          </div>
+        </div>
+        <div class="pdf-scroll" id="pdf-scroll"></div>
+      </section>
+
+      <section class="pane pane-report">
+        <div class="pane-toolbar">
+          <div>
+            <strong>Report</strong>
+            <span class="muted">Click claims to highlight evidence.</span>
+          </div>
+        </div>
+        <div class="report-scroll" id="report-scroll">
+          <section class="claim-index" id="claim-index"></section>
+          <article class="report-root" id="report-root"></article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
