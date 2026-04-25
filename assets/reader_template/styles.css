@@ -363,14 +363,14 @@ a:hover { text-decoration: underline; }
   padding: 10px 12px 6px;
   display: grid;
   gap: 8px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .research-strip {
   padding: 12px 12px 8px;
   display: grid;
   gap: 10px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
   background:
     radial-gradient(circle at top left, rgba(13, 148, 136, 0.12), transparent 32%),
     linear-gradient(180deg, rgba(247, 254, 231, 0.74), rgba(255, 255, 255, 0.92));
@@ -560,6 +560,7 @@ a:hover { text-decoration: underline; }
 .report-root {
   padding: 12px 14px 18px;
   font-size: 13px;
+  min-height: 100%;
 }
 
 .report-root h2,

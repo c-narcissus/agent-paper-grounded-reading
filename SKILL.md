@@ -320,6 +320,10 @@ The bundled reader should then:
 - use SyncTeX as the primary locator from LaTeX line spans to PDF coordinates
 - expand located line spans or search hits into the containing PDF paragraph block when possible, so the visible highlight covers the whole relevant paragraph
 - keep the PDF pane and report pane independently scrollable
+- render the complete `report.md`/`report.html` content as the primary right-side pane for every PDF-primary, LaTeX-primary, and mixed-source run
+- never replace the right-side report with a shortened claim index, research-lens summary, abstract, or generated digest
+- keep research-lens cards and claim-index cards as secondary navigation aids after the full report, not as a substitute for the full report
+- make claim clicks from research cards, evidence navigation, or claim-index cards scroll to the matching anchored claim in the full report body whenever that claim exists there
 - let users resize the evidence area and PDF viewport vertically inside the left pane
 - give the PDF pane substantially more screen width than the report pane under normal desktop layouts
 - scale the left PDF viewport so at least one complete PDF page is visible under normal desktop layouts

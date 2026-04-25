@@ -71,6 +71,13 @@ The manifest route is preferred for portability because it keeps the human repor
 After generating the portable bundle, workflows that want an immediately usable interactive reader should serve the `reader_output` directory with `scripts/serve_bundle.py`.
 In PDF-primary mode, serving the bundle is recommended as the default finish step rather than an optional extra.
 
+## Reader UI contract
+
+The right-side report pane must render the complete `report.md`/`report.html` content for every source mode.
+Do not replace the report pane with a shortened claim list, research-lens card set, abstract, or generated digest.
+Research-lens cards and claim-index cards may be included only as secondary navigation aids after the full report.
+When a user clicks a claim from any auxiliary card or index, the reader should scroll to the matching anchored claim inside the full report body when that node exists.
+
 ## Invariants
 
 - Every clickable report claim must have exactly one `claim_id`.

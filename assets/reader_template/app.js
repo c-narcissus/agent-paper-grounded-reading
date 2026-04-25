@@ -689,7 +689,11 @@ function scrollClaimIntoView(claimId) {
   if (!nodes || !nodes.size) {
     return;
   }
-  const node = [...nodes][0];
+  const orderedNodes = [...nodes];
+  const node =
+    orderedNodes.find((candidate) => candidate.closest?.("#report-root")) ||
+    orderedNodes.find((candidate) => candidate.classList.contains("report-claim")) ||
+    orderedNodes[0];
   node.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
@@ -839,10 +843,10 @@ async function boot() {
   wireEvidenceResizer();
   buildDocSwitch();
   renderDocumentImages(state.currentDocKey);
-  buildClaimIndex();
 
   elements.reportRoot.innerHTML = reportHtml;
   wireReportClaims();
+  buildClaimIndex();
 
   if (config.research_lens) {
     try {

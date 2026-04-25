@@ -52,7 +52,9 @@
 主 skill 自带静态 reader 页面。每次成功的精读任务都必须在结束前构建并启动这个页面。构建完成后，页面可以：
 
 - 左侧查看 PDF，右侧查看报告。
+- 右侧优先完整渲染 `report.md`，不能用简化 claim 列表或 research cards 替代完整报告。
 - 点击 claim 高亮对应证据。
+- 从辅助 cards/index 点击 claim 时，会回到完整报告正文里的对应 claim。
 - 在有 LaTeX / SyncTeX 时优先做精确定位。
 - 在 PDF-only 模式下使用 `locator_snippets` 定位并扩展到 PDF 段落块。
 - 读取 `research_lens.json`，以页面卡片形式展示 research equation、story logic 和 future ideas。

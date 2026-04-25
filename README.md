@@ -90,7 +90,9 @@ Every successful deep-reading run must build and launch this reader before final
 After the report artifacts are prepared, the reader can:
 
 - load the report beside the source PDF
+- render the complete `report.md` first in the right-side pane, not a shortened claim summary
 - highlight the whole relevant paragraph block from claim clicks
+- scroll claim clicks from auxiliary cards/indexes back to the matching claim inside the full report body
 - prefer SyncTeX over PDF text search when LaTeX exists
 - use PDF fallback anchors and expand snippet hits to the containing paragraph block when only a PDF is available
 - let users drag the divider between the evidence panel and PDF viewport
