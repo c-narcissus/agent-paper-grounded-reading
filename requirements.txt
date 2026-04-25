@@ -1,5 +1,6 @@
 Markdown>=3.6
 PyMuPDF>=1.24.0
+latex2mathml>=3.81.0
 
 # Runtime: Python 3.9+.
 # Optional external binaries for best results: pdflatex, synctex.

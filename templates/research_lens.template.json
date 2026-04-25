@@ -1,0 +1,80 @@
+{
+  "schema_version": "paper-research-lens/1.0",
+  "paper": {
+    "title": "<paper title>",
+    "source_mode": "latex-primary"
+  },
+  "research_equation": {
+    "one_sentence_thesis": "<A works under C, T breaks C, M needs Y, so the paper builds Z>",
+    "valuable_paradigm": "<popular paradigm or old success>",
+    "broken_assumption": "<the quiet assumption that fails>",
+    "hard_setting": "<realistic constraint or target setting>",
+    "borrowed_tool": "<method family that almost transfers>",
+    "unavailable_mechanism": "<missing mechanism Y>",
+    "surrogate_mechanism": "<replacement mechanism Z>",
+    "claim_ids": ["C2.1", "C6.1"]
+  },
+  "direction_reconstruction": {
+    "starting_dissatisfaction": "<what likely felt unrealistic or broken>",
+    "almost_worked_transfer": "<what neighboring method almost solved the issue>",
+    "blocking_constraint": "<why direct transfer fails>",
+    "replacement_logic": "<how the paper replaces Y with Z>",
+    "claim_ids": ["C6.1", "C6.2", "C7.1"]
+  },
+  "challenge_module_map": [
+    {
+      "challenge": "<challenge>",
+      "failure_mode": "<failure mode>",
+      "design_principle": "<design principle>",
+      "module": "<module>",
+      "ablation_or_evidence": "<ablation/result showing necessity>",
+      "claim_ids": ["C7.1", "C17.2"]
+    }
+  ],
+  "module_lenses": [
+    {
+      "module": "<module name>",
+      "failure_fixed": "<what fails without it>",
+      "ideal_unavailable_solution": "<what unlimited access would have used>",
+      "available_proxy": "<allowed proxy signal>",
+      "hidden_assumption": "<assumption that makes the proxy work>",
+      "future_direction": "<what to study when that assumption fails>",
+      "claim_ids": ["C14.1", "C23.1"]
+    }
+  ],
+  "citation_logic": [
+    {
+      "citation_cluster": "<citation cluster>",
+      "narrative_function": "<field anchor / limitation / ancestor / baseline / contrast>",
+      "assumption_inherited": "<assumption from prior work>",
+      "paper_move": "<how the paper modifies or exceeds it>",
+      "claim_ids": ["C8.1", "C8.2"]
+    }
+  ],
+  "experiment_story_map": [
+    {
+      "experiment": "<result block or ablation>",
+      "claim_supported": "<claim or module role supported>",
+      "counterfactual": "<alternative explanation ruled out>",
+      "stress_condition": "<what makes the result meaningful>",
+      "claim_ids": ["C17.1", "C17.3"]
+    }
+  ],
+  "story_patterns": [
+    {
+      "pattern_name": "<replacement story / closed loop / empty cell / three-module>",
+      "formula": "<compact reusable formula>",
+      "lesson": "<what future paper design lesson it teaches>",
+      "claim_ids": ["C20.1", "C23.1"]
+    }
+  ],
+  "boundary_directions": [
+    {
+      "title": "<future direction title>",
+      "hidden_assumption": "<assumption being broken>",
+      "what_breaks": "<what fails when the assumption breaks>",
+      "new_direction": "<next mechanism or setting worth exploring>",
+      "claim_ids": ["C21.1", "C23.1"]
+    }
+  ]
+}

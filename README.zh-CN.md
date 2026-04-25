@@ -4,64 +4,92 @@
 
 ![preview](./1.JPG)
 
-一个面向本地 AI Agent 工作流的论文精读 skill。
+`agent-paper-grounded-reading` 是一个面向 **Codex、Trae、Claude Code / CC 以及类似本地 AI Agent 工作流** 的论文精读 skill 包。
 
-重点不是“生成摘要”，而是输出一套可回查、可核对、可追溯的精读结果。分析结论可以在可视化页面中直接回查到原始 PDF / LaTeX 证据位置，方便人工核对原始出处。
+它不是普通摘要器。
+这个项目的目标是同时做到两件事：
 
-## 精读目录与侧重点
+1. **grounded 可追溯**
+   让报告里的关键判断都能回查到 PDF / LaTeX 原始证据。
+2. **research-generative 可产出新 idea**
+   不只解释论文做了什么，还要解释作者可能怎么想到这个方向、为什么这样组织 story、哪些隐藏假设可以继续往前推成下一篇论文。
 
-默认精读报告会覆盖下面这些部分，重点不是罗列名词，而是解释每一部分和论文主张之间的关系：
+## 这个项目现在会产出什么
 
-1. **论文识别与源包说明**
-   说明论文标题、作者、版本，以及本次分析实际使用了哪些材料。
-2. **标题拆解与真实研究问题**
-   解释题目各个关键词具体指向什么设定，论文真正想解决什么问题。
-3. **科学问题梯度**
-   从直接任务、上层研究问题到更宽泛的 AI / ML 问题逐层展开。
-4. **相关工作缺口分析**
-   说明作者继承了什么、超越了什么、真正补上的空缺是什么。
-5. **作者可能的设计思路**
-   重建作者为什么会这样设计方法，而不是只复述模块名字。
-6. **符号、概念与记号**
-   先把关键符号和对象讲清楚，再进入公式与算法。
-7. **公式与逐式解释**
-   覆盖目标函数、更新规则、阈值、生成目标等关键公式，并解释每个公式在方法里的作用。
-8. **算法 / 模块 walkthrough**
-   按步骤讲清楚输入、状态、中间量、输出，而不是只停留在公式层面。
-9. **图表解释与结果对齐**
-   解释图、表、实验设计分别在支撑什么主张，结果是否真的支持作者结论。
-10. **实验设计与 claim alignment**
-    说明数据集、任务、基线、指标、消融，以及实验结果和论文主张是否对齐。
-11. **reviewer 视角审计**
-    从新颖性、技术可靠性、可复现性、结果说服力等角度判断论文强弱。
-12. **贡献强度**
-    按 claim 拆开看每个创新点的证据强度，而不是笼统地说“有贡献”。
-13. **局限与 failure modes**
-    说明方法在哪些条件下可能失效、哪些假设偏强、哪些模块代价偏高。
-14. **创新类型判断**
-    判断它是增量式、重组式、跨方向融合，还是更边界性的创新。
-15. **未来方向**
-    提出下一步更值得做的改进方向和更有判别力的验证方式。
-16. **通俗故事总结**
-    用简单但不失真的方式记住论文核心思想。
+默认会要求 agent 产出以下文件：
+
+1. `report.md`
+   面向人阅读的精读主报告。
+2. `traceability_manifest.json`
+   报告 claim 到原始证据的映射。
+3. `latex_paragraphs.json`
+   LaTeX 段落锚点，保留源码路径与行号。
+4. `research_lens.json`
+   研究生成视角的结构化中间产物，提炼论文的 research equation、challenge-to-module 结构、story pattern 和后续 idea 方向。
+5. `reader_artifacts.json`
+   静态 reader 的输入清单。
+6. 可选 storyboard 产物
+   当运行环境支持图片生成时，额外输出分镜 prompt 或图片。
+
+## 合并后的分析方法学
+
+这次更新把原有 grounded 精读要求和 `research_generative_paper_reading_skill.md` 的方法学做了融合。
+新的主 skill 会同时要求 agent 覆盖这些重点：
+
+1. 论文身份与实际使用的 source package
+2. 一句话 thesis 与 research equation
+3. 标题拆解与真实问题
+4. scientific problem ladder
+5. 作者可能如何发现这个方向
+6. 作者如何把 story 搭起来
+7. related work 与关键 citation 的叙事角色
+8. 公式、理论、模块、图表、实验的逐层解释
+9. claims 与 evidence 是否真的对齐
+10. 这篇论文最值得复用的 story-making pattern
+11. 隐藏假设、脆弱点与边界推进方向
+12. 最后用一个简洁但忠实的故事收束全文
+
+## 目录结构
+
+- [SKILL.md](./SKILL.md)
+  主 skill 说明。
+- [agents/openai.yaml](./agents/openai.yaml)
+  面向工具 UI 的展示元数据。
+- [references](./references)
+  包含 traceability contract、reader contract，以及新增的 research-generative 方法学参考。
+- [templates](./templates)
+  包含报告模板、traceability 模板、reader artifact 模板、storyboard 模板和新增的 `research_lens.json` 模板。
+- [scripts](./scripts)
+  包含段落抽取、traceability 校验、reader bundle 构建和本地预览脚本。
+- [assets/reader_template](./assets/reader_template)
+  静态证据阅读页模板。
+
+## 页面能力
+
+主 skill 自带静态 reader 页面。
+构建完成后，页面可以：
+
+- 左侧查看 PDF，右侧查看报告
+- 点击 claim 高亮对应证据
+- 在有 LaTeX / SyncTeX 时优先做精确定位
+- 读取 `research_lens.json`，把 research equation、story logic 和 future ideas 以页面卡片形式展示出来
 
 ## 快速使用
 
-把下面两个文件放在同一个目录：
-
-- `agent-paper-grounded-reading-main.zip`
-- 论文文件，目前主要支持LaTeX 源码- paper.tar.gz，pdf效果会差很多（如果在arxiv上搜索不到latex源码的话）
-
-如果是 LaTeX 源包，在 Codex 里可以直接这样说：
+如果输入是 LaTeX 源码包，可以这样说：
 
 ```text
-请使用agent-paper-grounded-reading-main.zip里的skill 对 paper.tar.gz（latex）里的文章进行精读
+请使用 agent-paper-grounded-reading 对 paper.tar.gz 做 grounded 精读，同时提取研究视角下的新 idea。
 ```
 
-如果是 PDF，可以这样说：
+如果输入是 PDF，可以这样说：
 
 ```text
-请使用agent-paper-grounded-reading-main.zip里的skill 对 paper.pdf 进行精读
+请使用 agent-paper-grounded-reading 对 paper.pdf 做精读；如果能找到匹配的 arXiv LaTeX，就切换到 LaTeX-primary，并输出 report.md、traceability_manifest.json、research_lens.json。
 ```
 
-把 `paper.tar.gz` 或 `paper.pdf` 替换成你的真实文件名即可。
+如果还想要静态页面：
+
+```text
+在完成报告和中间产物后，再构建静态 evidence reader。
+```

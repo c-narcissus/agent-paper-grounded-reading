@@ -8,6 +8,7 @@ Required inputs:
 - `report.md`
 - `traceability_manifest.json`
 - `latex_paragraphs.json`
+- `research_lens.json`
 - at least one compiled PDF
 - the matching `.synctex.gz` or `.synctex` file for each compiled PDF
 
@@ -28,6 +29,7 @@ Expected shape:
 - `report.pdf`, optional
 - `traceability_manifest`
 - `latex_paragraphs`
+- `research_lens`
 - `documents[]`
 - `documents[].doc`
 - `documents[].pdf`
@@ -70,6 +72,7 @@ The generated bundle is self-contained:
 - the report is converted to HTML inside the bundle
 - the evidence map already includes the paragraph excerpt and the PDF highlight rectangles
 - claims with multiple evidence rows remain multi-highlight claims in the UI
+- the reader can surface research-equation and idea-generation summaries without replacing the original traceability surface
 - the PDF pane supports in-pane zoom while preserving the surrounding layout size
 - `reader-artifacts.json` is rewritten with bundle-local paths
 - `source-reader-artifacts.json` is kept as provenance when the build used an upstream artifact manifest

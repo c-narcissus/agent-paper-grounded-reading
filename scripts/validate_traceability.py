@@ -6,6 +6,11 @@ from pathlib import Path
 
 
 CLAIM_PATTERN = re.compile(r"\[(C\d+\.\d+)\]")
+ALLOWED_INTERPRETATION_TYPES = {
+    "evidence-backed interpretation",
+    "plausible inference",
+    "speculation",
+}
 
 
 def load_claim_ids(report_path: Path):
@@ -19,17 +24,19 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--report", required=True)
     parser.add_argument("--traceability", required=True)
-    parser.add_argument("--paragraphs", required=True)
+    parser.add_argument("--paragraphs")
     args = parser.parse_args()
 
     report_path = Path(args.report).resolve()
     traceability_path = Path(args.traceability).resolve()
-    paragraphs_path = Path(args.paragraphs).resolve()
+    paragraphs_path = Path(args.paragraphs).resolve() if args.paragraphs else None
 
     report_claim_ids, duplicate_report_claims = load_claim_ids(report_path)
     manifest = json.loads(traceability_path.read_text(encoding="utf-8"))
-    paragraph_bundle = json.loads(paragraphs_path.read_text(encoding="utf-8"))
-    paragraph_ids = {entry["paragraph_id"] for entry in paragraph_bundle.get("paragraphs", [])}
+    paragraph_ids = set()
+    if paragraphs_path:
+        paragraph_bundle = json.loads(paragraphs_path.read_text(encoding="utf-8"))
+        paragraph_ids = {entry["paragraph_id"] for entry in paragraph_bundle.get("paragraphs", [])}
 
     manifest_claims = manifest.get("claims", [])
     manifest_ids = [claim.get("claim_id") for claim in manifest_claims]
@@ -64,6 +71,13 @@ def main():
         if not claim.get("claim_text"):
             errors.append(f"{claim_id} is missing claim_text.")
 
+        interpretation_type = claim.get("interpretation_type")
+        if interpretation_type and interpretation_type not in ALLOWED_INTERPRETATION_TYPES:
+            errors.append(
+                f"{claim_id} has invalid interpretation_type {interpretation_type!r}; "
+                "expected evidence-backed interpretation, plausible inference, or speculation."
+            )
+
         evidence_rows = claim.get("evidence", [])
         if not evidence_rows:
             errors.append(f"{claim_id} has no evidence rows.")
@@ -76,7 +90,13 @@ def main():
 
             if not paragraph_id:
                 errors.append(f"{claim_id}/{evidence_id} is missing paragraph_id.")
-            elif paragraph_id not in paragraph_ids and not paragraph_id.startswith("pdf::"):
+            elif paragraph_id.startswith("pdf::"):
+                pass
+            elif not paragraphs_path:
+                errors.append(
+                    f"{claim_id}/{evidence_id} references {paragraph_id}, but no --paragraphs index was provided."
+                )
+            elif paragraph_id not in paragraph_ids:
                 errors.append(f"{claim_id}/{evidence_id} references unknown paragraph_id {paragraph_id}.")
 
             if not snippets:
@@ -93,6 +113,7 @@ def main():
                 "report_claims": len(report_set),
                 "manifest_claims": len(manifest_claims),
                 "paragraph_count": len(paragraph_ids),
+                "source_anchor_mode": "mixed-or-structured" if paragraphs_path else "pdf-fallback-only",
                 "status": "ok",
             },
             ensure_ascii=False,

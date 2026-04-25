@@ -9,7 +9,8 @@
     "pdf": "report.pdf"
   },
   "traceability_manifest": "traceability_manifest.json",
-  "latex_paragraphs": "latex_paragraphs.json",
+  "paragraph_index": "latex_paragraphs.json",
+  "research_lens": "research_lens.json",
   "documents": [
     {
       "doc": "main",

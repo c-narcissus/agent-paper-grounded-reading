@@ -11,7 +11,7 @@
     <header class="topbar">
       <div class="title-group">
         <h1 id="app-title">Paper Evidence Reader</h1>
-        <p id="app-subtitle">Click a report claim to inspect its paper evidence.</p>
+        <p id="app-subtitle">Trace grounded claims, inspect evidence, and mine reusable idea patterns.</p>
       </div>
       <nav class="asset-links" id="asset-links"></nav>
     </header>
@@ -39,17 +39,30 @@
             <p class="muted">Select a claim on the right to inspect its supporting evidence.</p>
           </div>
         </div>
+        <div
+          class="pane-resizer"
+          id="pdf-evidence-resizer"
+          role="separator"
+          aria-label="Resize evidence and PDF areas"
+          aria-orientation="horizontal"
+          aria-valuemin="112"
+          tabindex="0"
+          title="Drag to resize evidence and PDF areas. Double-click to reset."
+        >
+          <span class="pane-resizer__grip" aria-hidden="true"></span>
+        </div>
         <div class="pdf-scroll" id="pdf-scroll"></div>
       </section>
 
       <section class="pane pane-report">
         <div class="pane-toolbar">
           <div>
-            <strong>Report</strong>
-            <span class="muted">Click claims to highlight evidence.</span>
+            <strong>Report + Research Lens</strong>
+            <span class="muted">Click claims or research cards to inspect evidence.</span>
           </div>
         </div>
         <div class="report-scroll" id="report-scroll">
+          <section class="research-strip" id="research-strip" hidden></section>
           <section class="claim-index" id="claim-index"></section>
           <article class="report-root" id="report-root"></article>
         </div>

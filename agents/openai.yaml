@@ -1,5 +1,5 @@
 interface:
   display_name: "Agent Paper Grounded Reading"
-  short_description: "Grounded paper reading for local AI agent workflows."
+  short_description: "Grounded paper reading with traceability and idea mining."
   brand_color: "#0F766E"
-  default_prompt: "Use $agent-paper-grounded-reading to read this paper deeply and produce a grounded report with evidence artifacts."
+  default_prompt: "Use $agent-paper-grounded-reading to read this paper deeply, preserve source grounding, extract a research lens with new idea directions, match the report language to the user's request language (Chinese request -> Chinese report with English proper nouns and identifiers; otherwise English), prefer matching arXiv LaTeX when available, otherwise continue with PDF-only analysis and PDF fallback anchors, build the evidence reader when requested, and if the final reading package is PDF-primary, also launch the local static reader webpage and return the local URL."

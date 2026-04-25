@@ -1,9 +1,10 @@
 # Reader Artifact Contract
 
-The deep-reading workflow must produce two deliverable classes:
+The deep-reading workflow must produce three deliverable classes:
 
 1. a human-readable deep-reading report
 2. a machine-readable reader artifact set for interactive source/report alignment
+3. a machine-readable research lens artifact for idea generation and story-pattern extraction
 
 ## Required file set
 
@@ -14,9 +15,13 @@ Required files:
 
 - `report.md`
 - `traceability_manifest.json`
-- `latex_paragraphs.json`
+- `research_lens.json`
 - at least one compiled paper PDF
 - the matching `.synctex.gz` or `.synctex` sidecar for each PDF whenever LaTeX is available
+
+Required only when structured source text exists:
+
+- `latex_paragraphs.json` or another paragraph index file referenced by `reader_artifacts.json`
 
 Recommended files:
 
@@ -36,11 +41,15 @@ Required top-level fields:
 - `schema_version`: currently `paper-reader-artifacts/1.0`
 - `report.markdown`
 - `traceability_manifest`
-- `latex_paragraphs`
+- `research_lens`
 - `documents[]`
 - `documents[].doc`
 - `documents[].pdf`
 - `reader_output`
+
+Required when a structured paragraph index exists:
+
+- `latex_paragraphs` or `paragraph_index`
 
 Recommended fields:
 
@@ -59,13 +68,19 @@ The companion reader builder can consume either:
 - one artifact manifest: `--artifact-manifest reader_artifacts.json`
 
 The manifest route is preferred for portability because it keeps the human report, source PDFs, SyncTeX files, and evidence mappings in one parseable package.
+After generating the portable bundle, workflows that want an immediately usable interactive reader should serve the `reader_output` directory with `scripts/serve_bundle.py`.
+In PDF-primary mode, serving the bundle is recommended as the default finish step rather than an optional extra.
 
 ## Invariants
 
 - Every clickable report claim must have exactly one `claim_id`.
 - Every `claim_id` in `report.md` must appear in `traceability_manifest.json`.
 - Every evidence row must point to a valid `paragraph_id` in `latex_paragraphs.json`, unless the workflow explicitly falls back to a PDF-only anchor.
+- In PDF-primary mode, `pdf::...` anchors are valid even without a paragraph index file, as long as `locator_snippets` are strong enough for reliable PDF search.
 - If one claim depends on multiple original source locations, include all materially necessary locations as separate evidence rows.
 - If one report bullet mixes multiple independent claims, split it into separate claim IDs before writing the manifest.
 - When LaTeX is available, paragraph anchors must include `source_path`, `line_start`, and `line_end`.
 - Reader builders should use SyncTeX first and only use PDF text search as a fallback.
+- Reader builders should preserve `line_start` / `line_end` for auditability when available, but should expand the visible PDF highlight to the containing paragraph block or text block when possible.
+- In PDF-primary mode, a line or snippet hit must still expand to the containing paragraph or text block instead of staying as a thin line highlight.
+- `research_lens.json` should only reference real report `claim_id` values and should compress the paper into reusable research patterns rather than repeating the report verbatim.

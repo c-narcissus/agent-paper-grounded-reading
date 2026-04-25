@@ -1,10 +1,11 @@
 # Traceability Contract
 
-The deep-reading skill now produces four coordinated artifacts:
+The deep-reading skill now produces five coordinated artifacts:
 
 - `report.md`: the human-readable report
-- `latex_paragraphs.json`: extracted paragraph anchors from LaTeX or structured text
+- `latex_paragraphs.json` or another paragraph index file when structured source text exists
 - `traceability_manifest.json`: claim-to-evidence mapping consumed by downstream readers
+- `research_lens.json`: structured research-generative summary for idea mining
 - `reader_artifacts.json`: portable file-set manifest for reader builders
 
 ## 1. Report-side claim format
@@ -21,7 +22,7 @@ Rules:
 - claim IDs must be unique across the whole report
 - every claim ID in the report must appear exactly once in `traceability_manifest.json`
 
-## 2. `latex_paragraphs.json`
+## 2. Structured paragraph index
 
 Expected top-level keys:
 
@@ -93,6 +94,11 @@ Required claim fields:
 - `claim_text`
 - `evidence`
 
+Recommended claim fields:
+
+- `interpretation_type`: `evidence-backed interpretation`, `plausible inference`, or `speculation`
+- `research_role`: short label such as `direction reconstruction`, `module rationale`, `citation logic`, or `future idea`
+
 Required evidence fields:
 
 - `evidence_id`
@@ -109,6 +115,8 @@ Recommended evidence fields:
 
 When LaTeX is available, `paragraph_id` should point to an entry that includes the original source file path and line span.
 Those fields are consumed by SyncTeX-based readers to map report claims back to the compiled PDF with line-level precision.
+When LaTeX is unavailable, `paragraph_id` may instead use a `pdf::...` fallback anchor.
+In that case, the evidence row must still provide `locator_snippets` strong enough for PDF search, and the reader must expand the visual highlight to the containing paragraph or text block.
 
 ## 4. Coverage rules
 
@@ -118,3 +126,5 @@ Those fields are consumed by SyncTeX-based readers to map report claims back to 
 - The evidence list for each claim must be complete for the claim's actual meaning; do not include only the easiest matching paragraph when the report point depends on multiple source locations.
 - If the claim is inferential rather than directly stated, set `relation` to `inference`.
 - If no LaTeX exists after explicit search, replace `paragraph_id` with a clearly marked PDF fallback anchor and explain the fallback in `notes`.
+- In PDF-primary mode, fallback anchors should still be paragraph-oriented in the reader: if the matched evidence is one line, the visible highlight should widen to that line's containing PDF paragraph or text block.
+- If the claim reconstructs likely author reasoning, cite the exact motivating paragraphs and keep `interpretation_type` honest rather than presenting the reasoning as direct fact.

@@ -4,64 +4,124 @@
 
 ![preview](./1.JPG)
 
-`agent-paper-grounded-reading` is a deep-reading skill for local AI agent workflows.
+`agent-paper-grounded-reading` is a **grounded + research-generative** paper-reading skill package for local AI agent tools such as **Codex, Trae, Claude Code / CC, and similar workflows**.
 
-It is not designed as a plain paper summarizer. The goal is to produce grounded, auditable analysis that can be checked against original PDF / LaTeX evidence, including visual inspection in a static reader page.
+It is not a plain summarizer.
+The package is built for users who want:
 
-## Deep Reading Outline and Focus
+- a deep reading report
+- claim-to-evidence traceability against PDF / LaTeX sources
+- an optional static reader page for manual verification
+- a structured research lens that helps mine **new paper ideas**
 
-By default, the reading report covers these areas, with emphasis on how each part supports or questions the paper's actual claims:
+## Language Behavior
 
-1. **Paper identity and source package**
-   Clarifies title, authors, version, and which materials were actually used in the reading.
-2. **Title interpretation and real research problem**
-   Explains what the title terms mean and what problem the paper is really trying to solve.
-3. **Scientific problem ladder**
-   Expands from the direct task to higher-level research and broader AI / ML questions.
-4. **Related-work gap analysis**
-   Explains what the paper inherits, what it moves beyond, and what gap it is really filling.
-5. **Likely author reasoning path**
-   Reconstructs why the method was probably designed this way instead of only restating module names.
-6. **Symbols, concepts, and notation**
-   Introduces the key objects and notation before relying on formulas and algorithms.
-7. **Formulas and equation-level explanations**
-   Covers objectives, update rules, thresholds, generative targets, and what each formula does in the method.
-8. **Algorithm / module walkthrough**
-   Explains inputs, states, intermediate quantities, and outputs step by step.
-9. **Figure and table interpretation**
-   Explains what each figure or table is trying to support and whether it really supports that claim.
-10. **Experiment design and claim alignment**
-    Covers datasets, tasks, baselines, metrics, ablations, and whether the empirical evidence matches the paper's claims.
-11. **Reviewer-style audit**
-    Judges novelty, technical reliability, reproducibility, and result credibility.
-12. **Contribution strength**
-    Audits how strongly each claimed contribution is supported instead of treating all contributions equally.
-13. **Limitations and failure modes**
-    Points out where the method may break, which assumptions are strong, and which modules are costly or fragile.
-14. **Innovation type**
-    Judges whether the paper is incremental, recombinational, cross-directional, or more boundary-pushing.
-15. **Future directions**
-    Suggests stronger next steps and more decisive follow-up evaluations.
-16. **Vivid story summary**
-    Ends with a simple but faithful way to remember the paper's core idea.
+By default, the report follows the user's current request language.
+
+- Chinese request -> Chinese report
+- non-Chinese request -> English report
+- explicit language request -> follow the explicit instruction
+
+For Chinese reports, keep proper nouns and fixed technical identifiers in English.
+This includes paper titles, method or module names, datasets, baselines, equation symbols, claim IDs, filenames, and JSON keys.
+
+## What This Project Does
+
+By default, the skill asks the agent to produce:
+
+1. `report.md`
+   A detailed, source-grounded deep reading report.
+2. `traceability_manifest.json`
+   Claim-to-evidence mappings for every anchored report claim.
+3. `latex_paragraphs.json`
+   Stable paragraph anchors with source paths and line spans when LaTeX or structured source is available.
+4. `research_lens.json`
+   A compact idea-mining artifact that extracts the paper's research equation, challenge-to-module logic, story pattern, and future directions.
+5. `reader_artifacts.json`
+   A portable manifest for building the static evidence reader.
+6. Optional storyboard files
+   Prompt sets or images when image generation is available.
+
+## Deep Reading Focus
+
+The merged skill now combines two layers:
+
+1. **Grounded auditability**
+   Every important report claim should be traceable to LaTeX paragraphs or PDF fallback anchors.
+2. **Research-generative analysis**
+   The report should explain how the authors may have found the direction, what unavailable mechanism they replaced, how modules map to failure modes, why key citations matter, and what hidden assumptions can seed the next paper.
+
+The default report therefore covers:
+
+1. paper identification and source package used
+2. one-sentence thesis and research equation
+3. title interpretation
+4. real problem and scientific problem ladder
+5. likely author-side discovery path
+6. story construction and challenge-to-module map
+7. related work and reverse citation logic
+8. formulas, theory, modules, figures, and experiments
+9. claim-alignment and reviewer-style audit
+10. story pattern worth learning
+11. weaknesses, hidden assumptions, and boundary-pushing future ideas
+12. vivid story summary and exact sources used
+
+## Package Layout
+
+- [SKILL.md](./SKILL.md)
+  Main instructions for the local agent.
+- [agents/openai.yaml](./agents/openai.yaml)
+  UI-facing metadata.
+- [references](./references)
+  Contracts plus the research-generative methodology reference.
+- [templates](./templates)
+  Report, traceability, reader-artifact, storyboard, and research-lens templates.
+- [scripts](./scripts)
+  Paragraph extraction, traceability validation, reader bundle building, and bundle serving.
+- [assets/reader_template](./assets/reader_template)
+  The static evidence-reader UI.
+
+## Static Reader
+
+This repository includes a bundled reader page.
+After the report artifacts are prepared, the reader can:
+
+- load the report beside the source PDF
+- highlight the whole relevant paragraph block from claim clicks
+- prefer SyncTeX over PDF text search when LaTeX exists
+- use PDF fallback anchors and expand snippet hits to the containing paragraph block when only a PDF is available
+- let users drag the divider between the evidence panel and PDF viewport
+- render report formulas and evidence equations as readable math instead of raw LaTeX source
+- surface research-equation and idea-mining summaries from `research_lens.json`
+
+## PDF-Only Fallback
+
+For PDF-only papers, the skill now keeps the fallback path simple.
+
+- fallback chain: `arXiv LaTeX -> PDF-only analysis and PDF anchors`
+- first search for matching arXiv LaTeX
+- if no matching LaTeX exists, continue directly with the PDF
+- keep report-point localization explicit with PDF fallback anchors
+- when the final package is PDF-primary, build and launch the local static reader page so users can inspect paragraph-level highlights immediately
 
 ## Quick Use
 
-Put these in the same directory:
+If you are using the packaged skill zip in a local agent tool, place the skill package and the paper materials in the same workspace.
 
-- `agent-paper-grounded-reading-main.zip`
-- Paper files are primarily supported in LaTeX source format (paper.tar.gz). If the LaTeX source cannot be found on arXiv, PDF-based results may be much worse.
-
-If the input is a LaTeX package, in Codex you can say:
+For LaTeX input:
 
 ```text
-Please use the skill in agent-paper-grounded-reading-main.zip to deeply read the paper in paper.tar.gz (latex).
+Please use agent-paper-grounded-reading to deeply read paper.tar.gz, preserve claim-to-evidence grounding, and extract new research directions.
 ```
 
-If the input is a PDF, you can say:
+For PDF input:
 
 ```text
-Please use the skill in agent-paper-grounded-reading-main.zip to deeply read paper.pdf.
+Please use agent-paper-grounded-reading to deeply read paper.pdf, search for matching LaTeX if possible, produce the grounded report plus research_lens.json, and launch the static reader if the final package is PDF-primary.
 ```
 
-Replace `paper.tar.gz` or `paper.pdf` with the real filename.
+If the user wants a static page at the end:
+
+```text
+After finishing the report and artifacts, build the static evidence reader bundle too.
+```

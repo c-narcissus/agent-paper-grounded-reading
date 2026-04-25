@@ -1,36 +1,80 @@
 # Deep Reading Report: <Paper Title>
 
-Use this template together with `traceability_manifest.json`.
+Use this template together with `traceability_manifest.json` and `research_lens.json`.
+Write the final report in Chinese when the user's current request is primarily in Chinese; keep proper nouns, fixed technical identifiers, claim IDs, filenames, and JSON keys in English. Otherwise write the report in English.
 For every numbered section below:
 
 - start with `### Anchored Points`
 - add one or more claims in the exact form `- [C<section>.<index>] claim text`
 - make sure every claim ID appears in `traceability_manifest.json`
+- if a claim is reconstructive rather than directly stated, mark it as inferential in the manifest
 - if one claim depends on multiple source locations, list every materially necessary source location as separate evidence rows in `traceability_manifest.json`
 - if one bullet contains multiple independent claims, split it into multiple claim IDs before writing the manifest
-- after the anchored points, add the longer explanation, tables, formulas, or critique as needed
+- after the anchored points, add the longer explanation, tables, formulas, critique, or author-side reconstruction as needed
 
 ## 1. Paper Identification and Source Package Used
-## 2. Title Interpretation
-## 3. What Problem the Paper Really Solves
-## 4. Scientific Problem Ladder
-## 5. Related Work and What Was Still Missing
-## 6. Main Idea
-## 7. Likely Author Reasoning Path
-## 8. Symbols, Concepts, and Notation
-## 9. Key Formulas and Equation-by-Equation Explanation
-## 10. Theory, Proof, and Practice Mapping
-## 11. Algorithm / Module Walkthrough with Concrete Example
-## 12. Figure Explanations (PDF and/or LaTeX)
-## 13. Experimental Design
-## 14. Tables, Charts, and Claim Alignment Audit
-## 15. Reviewer-Lens Audit
-## 16. Innovation Points and Claim-by-Claim Support Audit
-## 17. Weaknesses, Limitations, and Improvement Room
-## 18. Innovation Type and Boundary Judgment
-## 19. Future Directions
-## 20. Simple Vivid Story Summary
-## 21. Sources Used
+## 2. One-Sentence Thesis and Research Equation
+## 3. Title Interpretation
+## 4. What Problem the Paper Really Solves
+## 5. Scientific Problem Ladder
+## 6. How the Authors May Have Found This Direction
+## 7. How the Authors Built the Story
+## 8. Related Work, Key Citations, and What Was Still Missing
+## 9. Main Idea
+## 10. Symbols, Concepts, and Notation
+## 11. Key Formulas and Equation-by-Equation Explanation
+## 12. Theory, Proof, and Practice Mapping
+## 13. Algorithm / Module Walkthrough with Concrete Example
+## 14. Method Deep Reading: The Author-Thinking Behind Each Module
+## 15. Figure Explanations (PDF and/or LaTeX)
+## 16. Experimental Design
+## 17. Experiments as Story Evidence and Claim Alignment Audit
+## 18. Reviewer-Lens Audit
+## 19. Innovation Points and Claim-by-Claim Support Audit
+## 20. Story-Making Pattern Worth Learning
+## 21. Weaknesses, Limitations, and Improvement Room
+## 22. Innovation Type and Boundary Judgment
+## 23. Future Directions and Boundary-Pushing Ideas
+## 24. Simple Vivid Story Summary
+## 25. Sources Used
+
+---
+
+## Optional Structured Aids for `research_lens.json`
+
+### Research Equation
+- old success / popular paradigm:
+- broken assumption:
+- hard setting or realistic constraint:
+- borrowed tool or neighboring method:
+- unavailable mechanism:
+- surrogate mechanism:
+
+### Challenge-to-Module Map
+
+| Challenge | Failure mode | Design principle | Module | Evidence or ablation |
+|---|---|---|---|---|
+
+### Module Lens Table
+
+| Module | Failure fixed | Ideal unavailable solution | Available proxy | Hidden assumption | Future research point |
+|---|---|---|---|---|---|
+
+### Citation Function Table
+
+| Citation cluster | Narrative function | Assumption inherited | How this paper modifies it |
+|---|---|---|---|
+
+### Story Pattern Worth Reusing
+- pattern name:
+- compact formula:
+- why it is reusable:
+
+### Boundary-Pushing Idea List
+- hidden assumption:
+- what breaks if it fails:
+- next mechanism worth exploring:
+- linked claim IDs:
 
 ---
 

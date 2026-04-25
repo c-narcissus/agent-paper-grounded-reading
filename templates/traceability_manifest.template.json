@@ -11,6 +11,8 @@
       "section_id": "1",
       "section_title": "Paper Identification and Source Package Used",
       "claim_text": "<anchored claim text copied from report>",
+      "interpretation_type": "evidence-backed interpretation",
+      "research_role": "source package grounding",
       "evidence": [
         {
           "evidence_id": "E-C1.1-a",
