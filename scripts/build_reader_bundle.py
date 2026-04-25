@@ -266,11 +266,14 @@ def infer_synctex_path(pdf_path: Path):
     )
 
 
-def build_synctex_map(pdf_map, synctex_args):
+def build_synctex_map(pdf_map, synctex_args, require_synctex=True):
     explicit = dict(synctex_args or [])
     synctex_map = {}
     for doc_key, pdf_path in pdf_map.items():
-        synctex_map[doc_key] = explicit.get(doc_key) or infer_synctex_path(pdf_path)
+        if doc_key in explicit:
+            synctex_map[doc_key] = explicit[doc_key]
+        elif require_synctex:
+            synctex_map[doc_key] = infer_synctex_path(pdf_path)
     return synctex_map
 
 
@@ -777,8 +780,12 @@ def main():
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    synctex_map = build_synctex_map(pdf_map, synctex_args)
     paragraph_lookup = load_paragraph_lookup(paragraphs_path) if paragraphs_path else {}
+    synctex_map = build_synctex_map(
+        pdf_map,
+        synctex_args,
+        require_synctex=bool(paragraph_lookup),
+    )
 
     copy_template(output_dir)
     render_report_html(report_path, output_dir)

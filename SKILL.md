@@ -1,6 +1,6 @@
 ---
 name: agent-paper-grounded-reading
-description: Deeply read a computer-science paper from a user-provided PDF, paper title, or LaTeX source. Use when Codex or similar local agent tools need a source-grounded, research-generative reading workflow that produces a deep report, traceability artifacts, a research lens for idea generation, and an optional evidence reader.
+description: Deeply read a computer-science paper from a user-provided PDF, paper title, or LaTeX source. Use when Codex or similar local agent tools need a source-grounded, research-generative reading workflow that produces a deep report, traceability artifacts, a research lens for idea generation, reusable PDF/LaTeX audit artifacts, and a mandatory launched static evidence reader.
 ---
 
 # Agent Paper Grounded Reading
@@ -16,7 +16,7 @@ The default secondary deliverables are:
 
 - a **traceability bundle** that maps report claims back to source evidence
 - a **research lens artifact** that extracts idea-generating patterns from the paper
-- an optional **static evidence reader** for interactive PDF/report verification
+- a mandatory **static evidence reader** for interactive PDF/report verification
 - an optional **connected cartoon storyboard** when image generation is available and the user has not opted out
 
 ## Usage Examples
@@ -27,13 +27,33 @@ The default secondary deliverables are:
 
 ## Runtime Requirements
 
-The bundled deep-reading scripts use Python 3.9+ standard library only.
-The static reader builder additionally requires `Markdown>=3.6`, `PyMuPDF>=1.24.0`, and `latex2mathml>=3.81.0` from `requirements.txt`.
+The bundled deep-reading scripts use Python 3.9+.
+PDF extraction, PDF fallback validation, and static reader building require `PyMuPDF>=1.24.0`.
+The static reader builder additionally requires `Markdown>=3.6` and `latex2mathml>=3.81.0` from `requirements.txt`.
 For LaTeX-to-PDF source highlighting, a TeX distribution that provides `pdflatex` and `synctex` is recommended.
 For interactive web viewing, this complete package includes `scripts/build_reader_bundle.py`, `scripts/serve_bundle.py`, and `assets/reader_template/`; no separate reader skill is required.
 Bundled scripts write only to user-specified output paths.
 This project is designed for Codex, Trae, Claude Code, and similar **local agent workflows**, not browser-only chat products.
-The static reader is an output artifact, not the primary runtime.
+The static evidence reader is a mandatory completion artifact for every successful deep-reading run, not an optional add-on.
+
+## Reusable bundled tools
+
+Prefer these scripts instead of rewriting one-off PDF/reader code:
+
+- `scripts/prepare_pdf_source.py`
+  Extract PDF page text, page text blocks, optional rendered page previews, and an optional copied PDF into the run output directory.
+  Use it at the start of PDF-primary and PDF-forbidden-LaTeX runs.
+- `scripts/validate_pdf_snippets.py`
+  Verify that every `locator_snippets` value in `traceability_manifest.json` is searchable in the referenced PDF with PyMuPDF, matching the reader's fallback locator behavior.
+  Run it before building the reader for PDF-primary packages.
+- `scripts/validate_traceability.py`
+  Verify anchored report claims, manifest coverage, evidence rows, and structured/PDF fallback anchor shape.
+- `scripts/build_reader_bundle.py`
+  Build the static reader from `reader_artifacts.json` or explicit arguments.
+  In PDF-primary mode, it no longer needs a fake SyncTeX file when no `latex_paragraphs.json` is supplied.
+- `scripts/build_and_serve_reader.py`
+  Build the reader bundle, launch `serve_bundle.py` in the background, wait for HTTP 200, and write `reader_url.txt`.
+  Prefer this wrapper for the final mandatory reader step.
 
 ## Scope
 
@@ -57,6 +77,9 @@ Use the provided LaTeX as the primary source.
 Also use the compiled PDF if available, because figures, layout, and page-local argument flow are often easier to interpret in PDF form.
 
 ### B. When the user provides a PDF but not LaTeX
+
+If the user explicitly says not to read, search, unpack, or use LaTeX/source files, obey that restriction and treat the supplied PDF as the only paper source.
+In that case, do not search arXiv source, do not inspect local `.tex` or source archives, and state that the run is PDF-primary because of the user's source constraint.
 
 Treat the PDF as the initial source, but first check whether the same paper has an **arXiv source / LaTeX package** available.
 If yes, prefer the arXiv LaTeX as the primary structural source and keep the PDF as a visual and pagination reference.
@@ -134,11 +157,12 @@ When there is tension between conservative summarization and idea generation:
 
 ## Output policy
 
-Generate three coordinated output classes by default:
+Generate four coordinated output classes by default:
 
 1. a **human-readable Markdown deep-reading report** that is pleasant to read on its own
 2. a **machine-readable grounded artifact set** that lets downstream tools connect report claims back to source evidence
 3. a **machine-readable research lens artifact** that captures the paper's idea-generating grammar
+4. a **built and launched static evidence reader** served from a local URL so the user can inspect report claims against the source immediately
 
 When LaTeX source or another structured text source is available, generate these artifacts next to the report:
 
@@ -147,6 +171,17 @@ When LaTeX source or another structured text source is available, generate these
 - `reader_artifacts.json`
 - `research_lens.json`
 - `storyboard_manifest.json` and/or `storyboard_prompts.md` when storyboard output is produced
+- `reader_bundle/` built with `scripts/build_reader_bundle.py`
+- a local reader URL launched with `scripts/serve_bundle.py`
+
+When the run is PDF-primary, generate these artifacts next to the report:
+
+- a PDF extraction artifact from `scripts/prepare_pdf_source.py`, normally `pdf_pages.json`
+- a plain text extraction file such as `<paper_stem>_pdf_text.txt`
+- `traceability_manifest.json` with `pdf::...` fallback anchors and robust `locator_snippets`
+- `research_lens.json`
+- `reader_artifacts.json` that omits `latex_paragraphs.json` and SyncTeX entries
+- `reader_bundle/` and a live local reader URL launched with `scripts/build_and_serve_reader.py`
 
 These artifacts are part of the default deliverable for this skill because downstream grounded readers and idea-mining workflows depend on them.
 Use:
@@ -154,6 +189,7 @@ Use:
 - [templates/report_template.md](templates/report_template.md) for report shape
 - [templates/traceability_manifest.template.json](templates/traceability_manifest.template.json) for claim-evidence mappings
 - [templates/reader_artifacts.template.json](templates/reader_artifacts.template.json) for the portable reader manifest
+- [templates/reader_artifacts_pdf.template.json](templates/reader_artifacts_pdf.template.json) for PDF-primary reader manifests without SyncTeX or `latex_paragraphs.json`
 - [templates/research_lens.template.json](templates/research_lens.template.json) for the structured research-generative summary
 - [templates/storyboard_manifest.template.json](templates/storyboard_manifest.template.json) for report-grounded storyboard metadata
 - [references/traceability-contract.md](references/traceability-contract.md) for claim rules
@@ -193,7 +229,7 @@ Before finishing, run:
 - `scripts/validate_traceability.py` to verify that every anchored claim in the report is covered by the manifest and that every referenced paragraph ID exists
 
 When the final reading package is PDF-primary and no LaTeX was found, skip `scripts/extract_latex_paragraphs.py`.
-In that case, write `pdf::...` anchors in `traceability_manifest.json`, keep high-quality `locator_snippets`, and run `scripts/validate_traceability.py` without `--paragraphs`.
+In that case, run `scripts/prepare_pdf_source.py` first, write `pdf::...` anchors in `traceability_manifest.json`, keep high-quality `locator_snippets`, run `scripts/validate_pdf_snippets.py`, and run `scripts/validate_traceability.py` without `--paragraphs`.
 
 Also verify manually that every `claim_ids` reference in `research_lens.json` points to a real report claim ID.
 
@@ -248,22 +284,23 @@ The report should sound like a research mentor reconstructing how the work may h
 ## Grounded workflow
 
 1. Assemble the best source package.
-2. If only PDF exists and no matching LaTeX can be found, continue with PDF-only analysis and PDF fallback anchors instead of blocking the task.
-3. If LaTeX is available, extract paragraph anchors with `scripts/extract_latex_paragraphs.py`.
-4. If LaTeX is not available, keep the package PDF-primary and make every evidence row use `pdf::...` fallback anchors plus `locator_snippets` strong enough for PDF search.
-5. Draft the report using anchored claim IDs in the Markdown itself.
-6. Fill `traceability_manifest.json` so each claim points to one or more paragraph IDs or PDF fallback anchors and PDF locator snippets.
-7. Fill `research_lens.json` so the paper's research equation, story structure, module logic, citation functions, and future directions are captured in structured form.
-8. Fill `reader_artifacts.json` to enumerate the report, traceability manifest, optional paragraph index, research lens artifact, compiled PDFs, SyncTeX sidecars when available, and optional storyboard files.
-9. Run `scripts/validate_traceability.py`.
-10. If the runtime has image generation and the user has not opted out, generate the connected cartoon storyboard from the completed report context.
-11. If the user also wants an interactive grounded reader, run the bundled `scripts/build_reader_bundle.py --artifact-manifest reader_artifacts.json`.
-12. If the final reading package is PDF-primary, do not stop at writing `reader_bundle/index.html`; also launch the local static webpage from `reader_bundle` with `scripts/serve_bundle.py`, preferably in a background process, and report the local URL.
-13. Only then finalize the report.
+2. If the user forbids LaTeX/source use, do not search or read it; continue with the supplied PDF only and PDF fallback anchors.
+3. If only PDF exists and no matching LaTeX can be found, continue with PDF-only analysis and PDF fallback anchors instead of blocking the task.
+4. For PDF-primary runs, run `scripts/prepare_pdf_source.py --pdf <paper.pdf> --output <run_dir> --doc-key <doc_key> --copy-pdf` before drafting the report.
+5. If LaTeX is available, extract paragraph anchors with `scripts/extract_latex_paragraphs.py`.
+6. If LaTeX is not available, keep the package PDF-primary and make every evidence row use `pdf::...` fallback anchors plus `locator_snippets` strong enough for PDF search.
+7. Draft the report using anchored claim IDs in the Markdown itself.
+8. Fill `traceability_manifest.json` so each claim points to one or more paragraph IDs or PDF fallback anchors and PDF locator snippets.
+9. Fill `research_lens.json` so the paper's research equation, story structure, module logic, citation functions, and future directions are captured in structured form.
+10. Fill `reader_artifacts.json` to enumerate the report, traceability manifest, optional paragraph index, research lens artifact, PDFs, SyncTeX sidecars when available, and optional storyboard files.
+11. Run `scripts/validate_traceability.py`; for PDF-primary runs, also run `scripts/validate_pdf_snippets.py --traceability traceability_manifest.json --pdf <doc_key>=<paper.pdf>`.
+12. If the runtime has image generation and the user has not opted out, generate the connected cartoon storyboard from the completed report context.
+13. Always build and launch the static grounded reader before finalizing, preferably with `scripts/build_and_serve_reader.py --artifact-manifest reader_artifacts.json --url-file reader_url.txt`.
+14. Only then finalize the report.
 
 ## Interactive reader build requirements
 
-When this skill builds the bundled static reader, the artifact set must preserve:
+Every successful run must build and serve the bundled static reader. The artifact set must preserve:
 
 - `latex_paragraphs.json` entries with `source_path`, `line_start`, and `line_end`
 - compiled PDFs plus `.synctex.gz` or `.synctex` sidecars
@@ -291,8 +328,10 @@ The bundled reader should then:
 - keep report/evidence text compact enough that it does not crowd the PDF
 - surface the research equation, replacement mechanism, challenge-to-module logic, and boundary-pushing ideas without hiding the underlying traceability
 
-When the source package is PDF-primary, serving the reader is part of the default finish condition.
-Use `scripts/serve_bundle.py --root reader_bundle --open` or an equivalent background launch so the user receives a live local URL instead of only an artifact path.
+If `traceability_manifest.json` contains evidence from web pages, review threads, metadata pages, or other sources that the bundled reader cannot highlight directly, keep those rows in the full traceability manifest and create a reader-specific manifest such as `reader_traceability_manifest.json` that keeps at least one local PDF/LaTeX/PDF-fallback evidence row for every report claim. Validate the full manifest and the reader-specific manifest before building the reader.
+
+Serving the reader is part of the default finish condition for **all** source modes, including LaTeX-primary, mixed-source, and PDF-primary packages.
+Use `scripts/build_and_serve_reader.py --artifact-manifest reader_artifacts.json --url-file reader_url.txt --open` or an equivalent background launch so the user receives a live local URL instead of only an artifact path.
 
 ## Mandatory report requirements
 

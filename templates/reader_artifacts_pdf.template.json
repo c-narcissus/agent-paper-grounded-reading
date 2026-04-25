@@ -1,0 +1,26 @@
+{
+  "schema_version": "paper-reader-artifacts/1.0",
+  "paper": {
+    "title": "<paper title>",
+    "source_mode": "pdf-primary"
+  },
+  "report": {
+    "markdown": "report.md"
+  },
+  "traceability_manifest": "traceability_manifest.json",
+  "research_lens": "research_lens.json",
+  "documents": [
+    {
+      "doc": "paper",
+      "label": "Main Paper",
+      "pdf": "paper.pdf"
+    }
+  ],
+  "storyboard": {
+    "manifest": "storyboard_manifest.json",
+    "prompts": "storyboard_prompts.md",
+    "images": [],
+    "status": "prompts-only"
+  },
+  "reader_output": "reader_bundle"
+}

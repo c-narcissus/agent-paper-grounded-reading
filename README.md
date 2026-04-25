@@ -11,7 +11,7 @@ The package is built for users who want:
 
 - a deep reading report
 - claim-to-evidence traceability against PDF / LaTeX sources
-- an optional static reader page for manual verification
+- a mandatory static reader page for manual verification
 - a structured research lens that helps mine **new paper ideas**
 
 ## Language Behavior
@@ -39,7 +39,9 @@ By default, the skill asks the agent to produce:
    A compact idea-mining artifact that extracts the paper's research equation, challenge-to-module logic, story pattern, and future directions.
 5. `reader_artifacts.json`
    A portable manifest for building the static evidence reader.
-6. Optional storyboard files
+6. `reader_bundle/` plus a local reader URL
+   A built and launched static evidence reader for inspecting report claims against source evidence.
+7. Optional storyboard files
    Prompt sets or images when image generation is available.
 
 ## Deep Reading Focus
@@ -77,13 +79,14 @@ The default report therefore covers:
 - [templates](./templates)
   Report, traceability, reader-artifact, storyboard, and research-lens templates.
 - [scripts](./scripts)
-  Paragraph extraction, traceability validation, reader bundle building, and bundle serving.
+  Paragraph extraction, PDF extraction, PDF snippet validation, reader bundle building, and bundle serving.
 - [assets/reader_template](./assets/reader_template)
   The static evidence-reader UI.
 
 ## Static Reader
 
 This repository includes a bundled reader page.
+Every successful deep-reading run must build and launch this reader before finalizing.
 After the report artifacts are prepared, the reader can:
 
 - load the report beside the source PDF
@@ -94,6 +97,21 @@ After the report artifacts are prepared, the reader can:
 - render report formulas and evidence equations as readable math instead of raw LaTeX source
 - surface research-equation and idea-mining summaries from `research_lens.json`
 
+## Reusable Scripts
+
+The packaged skill includes reusable tools extracted from PDF-only reading runs:
+
+- `scripts/prepare_pdf_source.py`
+  Extracts PDF text, page-level blocks, optional page previews, and an optional copied PDF into the output directory.
+- `scripts/validate_pdf_snippets.py`
+  Checks that every PDF fallback `locator_snippets` entry in `traceability_manifest.json` can be found by the same PyMuPDF search path used by the reader.
+- `scripts/build_and_serve_reader.py`
+  Builds `reader_bundle/`, starts the local static server in the background, waits for HTTP 200, and writes `reader_url.txt`.
+- `scripts/build_reader_bundle.py`
+  Supports PDF-primary bundles without requiring a fake SyncTeX file when no `latex_paragraphs.json` is supplied.
+- `templates/reader_artifacts_pdf.template.json`
+  Provides a ready PDF-primary reader manifest shape without SyncTeX or `latex_paragraphs.json`.
+
 ## PDF-Only Fallback
 
 For PDF-only papers, the skill now keeps the fallback path simple.
@@ -102,7 +120,9 @@ For PDF-only papers, the skill now keeps the fallback path simple.
 - first search for matching arXiv LaTeX
 - if no matching LaTeX exists, continue directly with the PDF
 - keep report-point localization explicit with PDF fallback anchors
-- when the final package is PDF-primary, build and launch the local static reader page so users can inspect paragraph-level highlights immediately
+- if the user explicitly forbids LaTeX/source use, do not search or read it
+- run `prepare_pdf_source.py` before drafting and `validate_pdf_snippets.py` before building the reader
+- for every source mode, build and launch the local static reader page so users can inspect paragraph-level highlights immediately
 
 ## Quick Use
 
@@ -117,11 +137,11 @@ Please use agent-paper-grounded-reading to deeply read paper.tar.gz, preserve cl
 For PDF input:
 
 ```text
-Please use agent-paper-grounded-reading to deeply read paper.pdf, search for matching LaTeX if possible, produce the grounded report plus research_lens.json, and launch the static reader if the final package is PDF-primary.
+Please use agent-paper-grounded-reading to deeply read paper.pdf, search for matching LaTeX if possible, produce the grounded report plus research_lens.json, build the static evidence reader, launch it locally, and return the local URL.
 ```
 
-If the user wants a static page at the end:
+The reader is mandatory, so this is also valid:
 
 ```text
-After finishing the report and artifacts, build the static evidence reader bundle too.
+After finishing the report and artifacts, build and launch the static evidence reader bundle.
 ```
