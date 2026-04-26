@@ -2,6 +2,9 @@
 
 Use this template together with `traceability_manifest.json` and `research_lens.json`.
 Write the final report in Chinese when the user's current request is primarily in Chinese; keep proper nouns, fixed technical identifiers, claim IDs, filenames, and JSON keys in English. Otherwise write the report in English.
+This report is the main teaching artifact, not a short summary.
+Do not impose an artificial length limit.
+Write enough detail that a reader can understand the original paper's motivation, method, formulas, experiments, evidence strength, limitations, and future directions from this report alone.
 For every numbered section below:
 
 - start with `### Anchored Points`
@@ -11,6 +14,9 @@ For every numbered section below:
 - if one claim depends on multiple source locations, list every materially necessary source location as separate evidence rows in `traceability_manifest.json`
 - if one bullet contains multiple independent claims, split it into multiple claim IDs before writing the manifest
 - after the anchored points, add the longer explanation, tables, formulas, critique, or author-side reconstruction as needed
+- do not leave a section as only a short anchored-claim list; add self-contained explanatory prose after the claims
+- preserve important equations, figures, tables, ablations, datasets, baselines, hyperparameters, and implementation details when the source provides them
+- prefer comprehensive grounded explanation over brevity unless the user explicitly asks for a concise version
 
 ## 1. Paper Identification and Source Package Used
 ## 2. One-Sentence Thesis and Research Equation

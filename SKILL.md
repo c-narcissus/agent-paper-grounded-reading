@@ -11,7 +11,9 @@ Use this skill in **local AI agent tools** when the user wants a **deep, paper-g
 - a user-provided LaTeX source tree or `.tex` files
 - only the paper title or citation-like paper name
 
-The primary deliverable is a **detailed Markdown report**.
+The primary deliverable is a **complete, long-form Markdown report**.
+Do not compress the report into a short summary.
+The report file has no artificial length cap: it should be long enough that a reader can understand the paper's motivation, method, formulas, experiments, evidence, limitations, and research opportunities without opening the original paper first.
 The default secondary deliverables are:
 
 - a **traceability bundle** that maps report claims back to source evidence
@@ -41,6 +43,10 @@ The static evidence reader is a mandatory completion artifact for every successf
 
 Prefer these scripts instead of rewriting one-off PDF/reader code:
 
+- `scripts/prepare_latex_source.py`
+  Prepare a LaTeX-primary run from a `.tar.gz`, `.tgz`, `.zip`, `.tex`, or source directory.
+  It safely extracts or copies the source into `<run_dir>/source`, discovers TeX entrypoints such as `main.tex` and `supplementary.tex`, optionally compiles them with `pdflatex -synctex=1`, runs `extract_latex_paragraphs.py`, writes `latex_source_manifest.json`, and creates a starter `reader_artifacts.json` pointing at the compiled PDFs and SyncTeX sidecars.
+  Use it at the start of user-provided LaTeX archive/source-tree runs instead of manually unpacking, compiling, and wiring paths.
 - `scripts/prepare_pdf_source.py`
   Extract PDF page text, page text blocks, optional rendered page previews, and an optional copied PDF into the run output directory.
   Use it at the start of PDF-primary and PDF-forbidden-LaTeX runs.
@@ -54,6 +60,7 @@ Prefer these scripts instead of rewriting one-off PDF/reader code:
   In PDF-primary mode, it no longer needs a fake SyncTeX file when no `latex_paragraphs.json` is supplied.
   It preprocesses report Markdown math delimiters (`$...$`, `$$...$$`, `\(...\)`, `\[...\]`) and math-like inline code into MathML before writing `report.html`.
   It treats bare paper symbols in inline code, such as `N`, `r`, `G_i`, `P_i^t`, `w_ij`, `alpha`, `phi_i`, and `psi_i`, as equations and normalizes Greek names plus multi-character subscripts before rendering.
+  It also sanitizes LaTeX-source evidence paragraphs for the reader by converting equation environments to MathML and stripping presentational commands such as `\begin{...}`, `\textbf{...}`, captions, refs, and list markers from visible evidence text.
 - `scripts/validate_reader_math.py`
   Verify that the built reader bundle does not expose raw LaTeX math delimiters, common raw LaTeX math commands, math-like code spans, bare `_i`/`^t` style symbols, or `math-fallback` spans in `report.html` and `evidence-map.json`.
 - `scripts/build_and_serve_reader.py`
@@ -164,13 +171,14 @@ When there is tension between conservative summarization and idea generation:
 
 Generate four coordinated output classes by default:
 
-1. a **human-readable Markdown deep-reading report** that is pleasant to read on its own
+1. a **human-readable Markdown deep-reading report** that is complete enough to teach the paper on its own
 2. a **machine-readable grounded artifact set** that lets downstream tools connect report claims back to source evidence
 3. a **machine-readable research lens artifact** that captures the paper's idea-generating grammar
 4. a **built and launched static evidence reader** served from a local URL so the user can inspect report claims against the source immediately
 
 When LaTeX source or another structured text source is available, generate these artifacts next to the report:
 
+- `latex_source_manifest.json` when `scripts/prepare_latex_source.py` is used
 - `latex_paragraphs.json`
 - `traceability_manifest.json`
 - `reader_artifacts.json`
@@ -204,6 +212,23 @@ Use:
 The paragraph index must preserve source file paths and line spans so downstream readers can use SyncTeX for precise audit anchors and then expand the visual PDF highlight to the containing paragraph block rather than only thin line slices.
 When the reading is PDF-primary and no LaTeX exists, do not block on a synthetic line index.
 Instead, keep `traceability_manifest.json` evidence rows on explicit `pdf::...` fallback anchors with strong `locator_snippets`, and require the reader to expand each snippet hit to the containing PDF paragraph or text block rather than a thin line box.
+
+### Report completeness requirement
+
+The report is the main deliverable, not a preview.
+Do not optimize it for chat brevity, token economy, or a short executive-summary style.
+The static reader must show the full report, and the report itself must preserve enough detail that the user can learn the original paper from the report alone.
+
+Required behavior:
+
+- Write full explanatory prose after anchored claims in every section; do not leave sections as only 1-2 bullets.
+- Preserve all key formulas and explain them equation by equation, including symbol meanings and algorithmic roles.
+- Explain every major module, figure, table, ablation, and experimental setting that materially supports the paper's claims.
+- Include concrete examples for algorithms or pipelines whenever the paper's method is operational rather than purely conceptual.
+- State what evidence supports each important judgment and what remains inferential.
+- Prefer adding more grounded detail over shortening, unless the user explicitly asks for a concise version.
+- Do not reuse an older short report as the final answer for a fresh run unless it is expanded and revalidated against the current source package.
+- The final chat message can be concise, but `report.md` must not be simplified.
 
 ### Traceability-first requirement
 
@@ -292,9 +317,10 @@ The report should sound like a research mentor reconstructing how the work may h
 2. If the user forbids LaTeX/source use, do not search or read it; continue with the supplied PDF only and PDF fallback anchors.
 3. If only PDF exists and no matching LaTeX can be found, continue with PDF-only analysis and PDF fallback anchors instead of blocking the task.
 4. For PDF-primary runs, run `scripts/prepare_pdf_source.py --pdf <paper.pdf> --output <run_dir> --doc-key <doc_key> --copy-pdf` before drafting the report.
-5. If LaTeX is available, extract paragraph anchors with `scripts/extract_latex_paragraphs.py`.
+5. If LaTeX is available as a source tree or archive, first run `scripts/prepare_latex_source.py --source <source> --output <run_dir> --compile`; if the source is already staged and compiled, at minimum run `scripts/extract_latex_paragraphs.py`.
 6. If LaTeX is not available, keep the package PDF-primary and make every evidence row use `pdf::...` fallback anchors plus `locator_snippets` strong enough for PDF search.
 7. Draft the report using anchored claim IDs in the Markdown itself.
+   Make this a full teaching-grade report, not a shortened digest.
 8. Fill `traceability_manifest.json` so each claim points to one or more paragraph IDs or PDF fallback anchors and PDF locator snippets.
 9. Fill `research_lens.json` so the paper's research equation, story structure, module logic, citation functions, and future directions are captured in structured form.
 10. Fill `reader_artifacts.json` to enumerate the report, traceability manifest, optional paragraph index, research lens artifact, PDFs, SyncTeX sidecars when available, and optional storyboard files.
@@ -354,6 +380,9 @@ The detailed heuristics for the author-perspective sections live in [references/
 When writing formulas or math symbols in the report, wrap formulas in Markdown math delimiters (`$...$`, `$$...$$`, `\(...\)`, `\[...\]`) or wrap short symbols in inline code so the reader builder can convert them to MathML.
 Use inline code for short paper symbols such as `G_i`, `P_i^t`, `w_ij`, `phi_i`, `psi_i`, `alpha`, `N`, and `r`; the builder will render them like Word equations.
 Do not leave naked LaTeX commands such as `\alpha`, `\theta`, `\sum`, or `\frac` in ordinary prose.
+
+For every mandatory section below, write the anchored claims first, then add enough non-claim explanatory text, tables, formula walkthroughs, examples, and critique to make the section self-contained.
+Do not treat the section checklist as permission to write only one claim and one short paragraph.
 
 ### 1. Paper identification and source package used
 

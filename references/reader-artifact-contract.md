@@ -22,6 +22,7 @@ Required files:
 Required only when structured source text exists:
 
 - `latex_paragraphs.json` or another paragraph index file referenced by `reader_artifacts.json`
+- `latex_source_manifest.json` when `scripts/prepare_latex_source.py` staged, compiled, and indexed a LaTeX archive or source tree
 
 Recommended files:
 
@@ -68,6 +69,7 @@ The companion reader builder can consume either:
 - one artifact manifest: `--artifact-manifest reader_artifacts.json`
 
 The manifest route is preferred for portability because it keeps the human report, source PDFs, SyncTeX files, and evidence mappings in one parseable package.
+For LaTeX archives or source trees, prefer `scripts/prepare_latex_source.py --source <archive-or-dir> --output <run_dir> --compile` to create the staged `source/` tree, `latex_paragraphs.json`, `latex_source_manifest.json`, and a starter `reader_artifacts.json`.
 After generating the portable bundle, workflows that want an immediately usable interactive reader should serve the `reader_output` directory with `scripts/serve_bundle.py`.
 In PDF-primary mode, serving the bundle is recommended as the default finish step rather than an optional extra.
 The preferred final wrapper is `scripts/build_and_serve_reader.py` because it builds the bundle, runs math validation, starts the local server, and writes the live URL.
@@ -85,6 +87,7 @@ The built reader must display formulas and math symbols as rendered MathML, not 
 The builder must preprocess report Markdown math delimiters (`$...$`, `$$...$$`, `\(...\)`, `\[...\]`) and math-like inline code before Markdown conversion.
 Short paper symbols written as inline code, including single-letter variables, bare subscripts/superscripts (`G_i`, `P_i^t`, `w_ij`), and Greek names (`alpha`, `phi_i`, `psi_i`), must render like equations rather than literal underscore text.
 The builder must also render math in claim text and evidence text.
+For LaTeX-source evidence paragraphs, the builder must sanitize visible evidence text by stripping presentational LaTeX commands and rendering equation environments as MathML, so the reader does not show raw `\begin{...}` blocks or underscore-style formulas.
 `latex2mathml` is a required dependency for successful math rendering.
 Do not treat a bundle containing `math-fallback` spans, raw math delimiters, common raw LaTeX math commands, math-like code spans, or bare `_i`/`^t` symbols as complete.
 Run `scripts/validate_reader_math.py --bundle <reader_bundle>` after building and before serving or finalizing.

@@ -24,6 +24,17 @@ DELIMITED_MATH_PATTERN = re.compile(
     r"(?<!\\)\$\$(.+?)(?<!\\)\$\$|(?<!\\)\$(.+?)(?<!\\)\$|\\\[(.+?)\\\]|\\\((.+?)\\\)",
     re.DOTALL,
 )
+LATEX_MATH_ENV_PATTERN = re.compile(
+    r"\\begin\{(?P<env>equation\*?|align\*?|gather\*?|multline\*?)\}"
+    r"(?P<body>.*?)"
+    r"\\end\{(?P=env)\}",
+    re.DOTALL,
+)
+LATEX_BEGIN_END_PATTERN = re.compile(r"\\(?:begin|end)\{[^{}]+\}(?:\[[^\]]*\])?")
+LATEX_ARG_TEXT_COMMAND_PATTERN = re.compile(
+    r"\\(?:textbf|textit|emph|text|mathrm|mathbf|operatorname|caption|footnote)\s*\{([^{}]*)\}"
+)
+LATEX_REF_COMMAND_PATTERN = re.compile(r"\\(?:ref|eqref|cite|citep|citet)\s*\{([^{}]*)\}")
 BLOCK_MATH_AFTER_BREAK_PATTERN = re.compile(
     r"(<br\s*/?>\s*)(<span class=\"math-(?:rendered|fallback) math-(?:rendered|fallback)--inline\".*?</span>)",
     re.DOTALL,
@@ -220,6 +231,78 @@ def render_text_with_math(text: str):
 
     intermediate = INLINE_CODE_PATTERN.sub(replace_inline_code, raw_text)
     rendered = render_delimited_math(intermediate)
+    for token, markup in placeholders.items():
+        rendered = rendered.replace(token, markup)
+    return rendered
+
+
+def clean_math_environment_body(body: str):
+    cleaned = body or ""
+    cleaned = re.sub(r"\\label\{[^{}]*\}", "", cleaned)
+    cleaned = re.sub(r"\\(?:begin|end)\{(?:aligned|split|matrix|pmatrix|bmatrix|cases)\}", "", cleaned)
+    cleaned = cleaned.replace("&", " ")
+    cleaned = re.sub(r"\\\\+", r" ; ", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned
+
+
+def sanitize_latex_source_text(text: str):
+    sanitized = text or ""
+    sanitized = LATEX_BEGIN_END_PATTERN.sub(" ", sanitized)
+    sanitized = re.sub(r"\\item\b", " - ", sanitized)
+    sanitized = re.sub(r"\\label\{[^{}]*\}", "", sanitized)
+    sanitized = LATEX_REF_COMMAND_PATTERN.sub(r"\1", sanitized)
+
+    previous = None
+    while previous != sanitized:
+        previous = sanitized
+        sanitized = LATEX_ARG_TEXT_COMMAND_PATTERN.sub(r"\1", sanitized)
+        sanitized = re.sub(r"\\[A-Za-z]+\*?\s*(?:\[[^\]]*\])?\{([^{}]*)\}", r"\1", sanitized)
+
+    replacements = {
+        r"\%": "%",
+        r"\_": "_",
+        r"\&": "&",
+        r"\#": "#",
+        r"\{": "{",
+        r"\}": "}",
+        r"``": '"',
+        r"''": '"',
+    }
+    for source, target in replacements.items():
+        sanitized = sanitized.replace(source, target)
+
+    sanitized = re.sub(r"\\[A-Za-z]+\*?(?:\[[^\]]*\])?", " ", sanitized)
+    sanitized = sanitized.replace("\\\\", " ")
+    sanitized = sanitized.replace("\\", " ")
+    sanitized = sanitized.replace("{", "").replace("}", "")
+    sanitized = re.sub(r"\s+", " ", sanitized).strip()
+    return sanitized
+
+
+def render_latex_source_text_with_math(text: str):
+    raw_text = text or ""
+    placeholders = {}
+
+    def stash_markup(markup: str):
+        token = f"@@LATEX_SOURCE_MATH_{len(placeholders)}@@"
+        placeholders[token] = markup
+        return token
+
+    def replace_math_environment(match):
+        latex = clean_math_environment_body(match.group("body"))
+        return stash_markup(render_math_markup(latex, "block")) if latex else ""
+
+    protected = LATEX_MATH_ENV_PATTERN.sub(replace_math_environment, raw_text)
+
+    def replace_delimited_math(match):
+        latex = next(group for group in match.groups() if group is not None)
+        display = "block" if match.group(1) is not None or match.group(3) is not None else "inline"
+        return stash_markup(render_math_markup(latex, display))
+
+    protected = DELIMITED_MATH_PATTERN.sub(replace_delimited_math, protected)
+    sanitized = sanitize_latex_source_text(protected)
+    rendered = html.escape(sanitized).replace("\n", "<br>\n")
     for token, markup in placeholders.items():
         rendered = rendered.replace(token, markup)
     return rendered
@@ -710,7 +793,7 @@ def build_evidence_map(traceability_path: Path, paragraph_lookup, pdf_map, synct
                         "tex_file": paragraph.get("tex_file", ""),
                         "section_path": paragraph.get("section_path", []),
                         "paragraph_text": paragraph.get("text", evidence.get("notes", "")),
-                        "paragraph_html": render_text_with_math(
+                        "paragraph_html": render_latex_source_text_with_math(
                             paragraph.get("text", evidence.get("notes", ""))
                         ),
                         "line_start": paragraph.get("line_start"),
