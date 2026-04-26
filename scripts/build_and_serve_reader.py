@@ -88,9 +88,14 @@ def main():
 
     build_script = SCRIPTS_DIR / "build_reader_bundle.py"
     serve_script = SCRIPTS_DIR / "serve_bundle.py"
+    math_validate_script = SCRIPTS_DIR / "validate_reader_math.py"
 
     subprocess.run(
         [sys.executable, str(build_script), "--artifact-manifest", str(artifact_manifest)],
+        check=True,
+    )
+    subprocess.run(
+        [sys.executable, str(math_validate_script), "--bundle", str(reader_root)],
         check=True,
     )
 

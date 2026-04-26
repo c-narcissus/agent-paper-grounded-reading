@@ -4,3 +4,4 @@ latex2mathml>=3.81.0
 
 # Runtime: Python 3.9+.
 # Optional external binaries for best results: pdflatex, synctex.
+# Required for readable static-reader formulas: latex2mathml.

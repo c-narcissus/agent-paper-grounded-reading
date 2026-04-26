@@ -57,6 +57,8 @@
 - 从辅助 cards/index 点击 claim 时，会回到完整报告正文里的对应 claim。
 - 在有 LaTeX / SyncTeX 时优先做精确定位。
 - 在 PDF-only 模式下使用 `locator_snippets` 定位并扩展到 PDF 段落块。
+- 将报告正文里的 `$...$`、`$$...$$`、`\(...\)`、`\[...\]` 和数学 inline code 转成 MathML，而不是显示 raw LaTeX。
+- 通过 `scripts/validate_reader_math.py` 检查 `report.html` 和 `evidence-map.json`，避免 raw LaTeX 静默留在网页里。
 - 读取 `research_lens.json`，以页面卡片形式展示 research equation、story logic 和 future ideas。
 
 ## 可复用脚本
@@ -65,8 +67,9 @@
 
 - `scripts/prepare_pdf_source.py`：抽取 PDF 文本、页级 text blocks、可选页面预览图，并可把 PDF 复制到输出目录。
 - `scripts/validate_pdf_snippets.py`：校验 `traceability_manifest.json` 里的 PDF fallback `locator_snippets` 是否能被 reader 使用的 PyMuPDF 搜索路径找到。
-- `scripts/build_and_serve_reader.py`：构建 `reader_bundle/`，后台启动本地静态服务，等待 HTTP 200，并写出 `reader_url.txt`。
-- `scripts/build_reader_bundle.py`：在 PDF-primary 且没有 `latex_paragraphs.json` 时，不再需要假的 SyncTeX 文件。
+- `scripts/build_and_serve_reader.py`：构建 `reader_bundle/`，校验数学渲染，后台启动本地静态服务，等待 HTTP 200，并写出 `reader_url.txt`。
+- `scripts/build_reader_bundle.py`：在 PDF-primary 且没有 `latex_paragraphs.json` 时，不再需要假的 SyncTeX 文件；同时把报告、claim 和 evidence 里的 LaTeX 数学转成 MathML。
+- `scripts/validate_reader_math.py`：如果构建后的网页仍包含 raw LaTeX 数学定界符、常见 raw LaTeX 数学命令或 fallback math spans，就让运行失败。
 - `templates/reader_artifacts_pdf.template.json`：提供不含 SyncTeX 和 `latex_paragraphs.json` 的 PDF-primary reader manifest 模板。
 
 ## PDF-Only 流程

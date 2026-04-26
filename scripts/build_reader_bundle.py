@@ -18,6 +18,7 @@ except ImportError:
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE_DIR = ROOT / "assets" / "reader_template"
 INLINE_CODE_PATTERN = re.compile(r"`([^`\n]+)`")
+FENCED_CODE_BLOCK_PATTERN = re.compile(r"(?ms)^(```|~~~)[^\n]*\n.*?^\1\s*$")
 CODE_HTML_PATTERN = re.compile(r"<code>(.*?)</code>", re.DOTALL)
 DELIMITED_MATH_PATTERN = re.compile(
     r"(?<!\\)\$\$(.+?)(?<!\\)\$\$|(?<!\\)\$(.+?)(?<!\\)\$|\\\[(.+?)\\\]|\\\((.+?)\\\)",
@@ -32,6 +33,7 @@ STANDALONE_INLINE_MATH_PATTERN = re.compile(
     re.DOTALL,
 )
 LATEX_COMMAND_PATTERN = re.compile(r"\\[A-Za-z]+")
+ALLOW_MATH_FALLBACK = False
 
 
 def rect_to_list(rect):
@@ -98,6 +100,11 @@ def render_math_markup(latex: str, display: str = "inline"):
         return ""
 
     if latex_to_mathml is None:
+        if not ALLOW_MATH_FALLBACK:
+            raise RuntimeError(
+                "latex2mathml is required to render reader math. Install requirements.txt "
+                "or rerun with --allow-math-fallback only if raw-code fallback is acceptable."
+            )
         return (
             f'<span class="math-fallback math-fallback--{display}" data-latex="{escaped}">'
             f"<code>{escaped}</code></span>"
@@ -105,7 +112,9 @@ def render_math_markup(latex: str, display: str = "inline"):
 
     try:
         mathml = latex_to_mathml(cleaned, display=display)
-    except Exception:
+    except Exception as exc:
+        if not ALLOW_MATH_FALLBACK:
+            raise RuntimeError(f"Failed to render LaTeX math {cleaned!r}: {exc}") from exc
         return (
             f'<span class="math-fallback math-fallback--{display}" data-latex="{escaped}">'
             f"<code>{escaped}</code></span>"
@@ -164,6 +173,35 @@ def render_text_with_math(text: str):
     return rendered
 
 
+def preprocess_report_markdown_math(report_text: str):
+    placeholders = {}
+
+    def stash_literal(value: str):
+        token = f"@@PAPERREADERLITERAL{len(placeholders)}@@"
+        placeholders[token] = value
+        return token
+
+    protected = FENCED_CODE_BLOCK_PATTERN.sub(lambda match: stash_literal(match.group(0)), report_text)
+
+    def replace_inline_code(match):
+        code_value = match.group(1)
+        if looks_like_latex_math(code_value):
+            return render_math_markup(code_value, "inline")
+        return stash_literal(match.group(0))
+
+    converted = INLINE_CODE_PATTERN.sub(replace_inline_code, protected)
+
+    def replace_delimited_math(match):
+        latex = next(group for group in match.groups() if group is not None)
+        display = "block" if match.group(1) is not None or match.group(3) is not None else "inline"
+        return render_math_markup(latex, display)
+
+    converted = DELIMITED_MATH_PATTERN.sub(replace_delimited_math, converted)
+    for token, literal in placeholders.items():
+        converted = converted.replace(token, literal)
+    return converted
+
+
 def convert_report_html_math(report_html: str):
     def replace_code_tag(match):
         code_value = html.unescape(match.group(1))
@@ -185,8 +223,9 @@ def convert_report_html_math(report_html: str):
 
 def render_report_html(report_markdown: Path, output_dir: Path):
     report_text = report_markdown.read_text(encoding="utf-8")
+    report_text_for_html = preprocess_report_markdown_math(report_text)
     html = markdown(
-        report_text,
+        report_text_for_html,
         extensions=["extra", "fenced_code", "tables", "sane_lists"],
         output_format="html5",
     )
@@ -737,7 +776,15 @@ def main():
     parser.add_argument("--synctex", action="append", type=parse_pdf_arg)
     parser.add_argument("--output")
     parser.add_argument("--report-pdf")
+    parser.add_argument(
+        "--allow-math-fallback",
+        action="store_true",
+        help="Allow raw-code math fallback when latex2mathml is missing or cannot render a formula.",
+    )
     args = parser.parse_args()
+
+    global ALLOW_MATH_FALLBACK
+    ALLOW_MATH_FALLBACK = args.allow_math_fallback
 
     manifest_config = {}
     artifact_manifest_path = None

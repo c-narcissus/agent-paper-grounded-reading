@@ -97,6 +97,8 @@ After the report artifacts are prepared, the reader can:
 - use PDF fallback anchors and expand snippet hits to the containing paragraph block when only a PDF is available
 - let users drag the divider between the evidence panel and PDF viewport
 - render report formulas and evidence equations as readable math instead of raw LaTeX source
+- convert report-body math delimiters and math-like inline code to MathML before Markdown rendering
+- run `scripts/validate_reader_math.py` so raw LaTeX math does not silently remain in `report.html` or `evidence-map.json`
 - surface research-equation and idea-mining summaries from `research_lens.json`
 
 ## Reusable Scripts
@@ -108,9 +110,12 @@ The packaged skill includes reusable tools extracted from PDF-only reading runs:
 - `scripts/validate_pdf_snippets.py`
   Checks that every PDF fallback `locator_snippets` entry in `traceability_manifest.json` can be found by the same PyMuPDF search path used by the reader.
 - `scripts/build_and_serve_reader.py`
-  Builds `reader_bundle/`, starts the local static server in the background, waits for HTTP 200, and writes `reader_url.txt`.
+  Builds `reader_bundle/`, validates math rendering, starts the local static server in the background, waits for HTTP 200, and writes `reader_url.txt`.
 - `scripts/build_reader_bundle.py`
   Supports PDF-primary bundles without requiring a fake SyncTeX file when no `latex_paragraphs.json` is supplied.
+  It renders `$...$`, `$$...$$`, `\(...\)`, `\[...\]`, and math-like inline code as MathML in the full report, claim text, and evidence text.
+- `scripts/validate_reader_math.py`
+  Fails the run if the built reader still contains raw LaTeX math delimiters, common raw LaTeX math commands, or fallback math spans.
 - `templates/reader_artifacts_pdf.template.json`
   Provides a ready PDF-primary reader manifest shape without SyncTeX or `latex_paragraphs.json`.
 

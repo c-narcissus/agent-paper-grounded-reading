@@ -70,6 +70,7 @@ The companion reader builder can consume either:
 The manifest route is preferred for portability because it keeps the human report, source PDFs, SyncTeX files, and evidence mappings in one parseable package.
 After generating the portable bundle, workflows that want an immediately usable interactive reader should serve the `reader_output` directory with `scripts/serve_bundle.py`.
 In PDF-primary mode, serving the bundle is recommended as the default finish step rather than an optional extra.
+The preferred final wrapper is `scripts/build_and_serve_reader.py` because it builds the bundle, runs math validation, starts the local server, and writes the live URL.
 
 ## Reader UI contract
 
@@ -77,6 +78,15 @@ The right-side report pane must render the complete `report.md`/`report.html` co
 Do not replace the report pane with a shortened claim list, research-lens card set, abstract, or generated digest.
 Research-lens cards and claim-index cards may be included only as secondary navigation aids after the full report.
 When a user clicks a claim from any auxiliary card or index, the reader should scroll to the matching anchored claim inside the full report body when that node exists.
+
+## Math rendering contract
+
+The built reader must display formulas and math symbols as rendered MathML, not raw LaTeX strings.
+The builder must preprocess report Markdown math delimiters (`$...$`, `$$...$$`, `\(...\)`, `\[...\]`) and math-like inline code before Markdown conversion.
+The builder must also render math in claim text and evidence text.
+`latex2mathml` is a required dependency for successful math rendering.
+Do not treat a bundle containing `math-fallback` spans, raw math delimiters, or common raw LaTeX math commands as complete.
+Run `scripts/validate_reader_math.py --bundle <reader_bundle>` after building and before serving or finalizing.
 
 ## Invariants
 
@@ -91,3 +101,4 @@ When a user clicks a claim from any auxiliary card or index, the reader should s
 - Reader builders should preserve `line_start` / `line_end` for auditability when available, but should expand the visible PDF highlight to the containing paragraph block or text block when possible.
 - In PDF-primary mode, a line or snippet hit must still expand to the containing paragraph or text block instead of staying as a thin line highlight.
 - `research_lens.json` should only reference real report `claim_id` values and should compress the paper into reusable research patterns rather than repeating the report verbatim.
+- The generated `report.html` and `evidence-map.json` must pass `validate_reader_math.py`.

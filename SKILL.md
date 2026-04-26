@@ -30,6 +30,7 @@ The default secondary deliverables are:
 The bundled deep-reading scripts use Python 3.9+.
 PDF extraction, PDF fallback validation, and static reader building require `PyMuPDF>=1.24.0`.
 The static reader builder additionally requires `Markdown>=3.6` and `latex2mathml>=3.81.0` from `requirements.txt`.
+`latex2mathml` is mandatory for readable formulas and symbols in the static reader; do not accept raw LaTeX fallback as a successful reader build unless the user explicitly asks for fallback behavior.
 For LaTeX-to-PDF source highlighting, a TeX distribution that provides `pdflatex` and `synctex` is recommended.
 For interactive web viewing, this complete package includes `scripts/build_reader_bundle.py`, `scripts/serve_bundle.py`, and `assets/reader_template/`; no separate reader skill is required.
 Bundled scripts write only to user-specified output paths.
@@ -51,8 +52,11 @@ Prefer these scripts instead of rewriting one-off PDF/reader code:
 - `scripts/build_reader_bundle.py`
   Build the static reader from `reader_artifacts.json` or explicit arguments.
   In PDF-primary mode, it no longer needs a fake SyncTeX file when no `latex_paragraphs.json` is supplied.
+  It preprocesses report Markdown math delimiters (`$...$`, `$$...$$`, `\(...\)`, `\[...\]`) and math-like inline code into MathML before writing `report.html`.
+- `scripts/validate_reader_math.py`
+  Verify that the built reader bundle does not expose raw LaTeX math delimiters, common raw LaTeX math commands, or `math-fallback` spans in `report.html` and `evidence-map.json`.
 - `scripts/build_and_serve_reader.py`
-  Build the reader bundle, launch `serve_bundle.py` in the background, wait for HTTP 200, and write `reader_url.txt`.
+  Build the reader bundle, run `validate_reader_math.py`, launch `serve_bundle.py` in the background, wait for HTTP 200, and write `reader_url.txt`.
   Prefer this wrapper for the final mandatory reader step.
 
 ## Scope
@@ -295,8 +299,9 @@ The report should sound like a research mentor reconstructing how the work may h
 10. Fill `reader_artifacts.json` to enumerate the report, traceability manifest, optional paragraph index, research lens artifact, PDFs, SyncTeX sidecars when available, and optional storyboard files.
 11. Run `scripts/validate_traceability.py`; for PDF-primary runs, also run `scripts/validate_pdf_snippets.py --traceability traceability_manifest.json --pdf <doc_key>=<paper.pdf>`.
 12. If the runtime has image generation and the user has not opted out, generate the connected cartoon storyboard from the completed report context.
-13. Always build and launch the static grounded reader before finalizing, preferably with `scripts/build_and_serve_reader.py --artifact-manifest reader_artifacts.json --url-file reader_url.txt`.
-14. Only then finalize the report.
+13. Always build the static grounded reader before finalizing, preferably with `scripts/build_and_serve_reader.py --artifact-manifest reader_artifacts.json --url-file reader_url.txt`.
+14. Ensure `scripts/validate_reader_math.py` passes for the built reader bundle; if it fails, fix the report math markup or install `requirements.txt` before finalizing.
+15. Only then finalize the report.
 
 ## Interactive reader build requirements
 
@@ -328,7 +333,9 @@ The bundled reader should then:
 - give the PDF pane substantially more screen width than the report pane under normal desktop layouts
 - scale the left PDF viewport so at least one complete PDF page is visible under normal desktop layouts
 - allow users to zoom PDF content in or out inside the fixed PDF pane without resizing the surrounding layout
-- render report and evidence formulas as readable math instead of raw LaTeX source when the source text contains equations
+- render report and evidence formulas/symbols as readable MathML instead of raw LaTeX source when the source text contains equations
+- convert report-body `$...$`, `$$...$$`, `\(...\)`, `\[...\]`, and math-like inline code spans before Markdown conversion so the full right-side report does not leak raw LaTeX
+- require `validate_reader_math.py` to pass before treating the static reader as complete
 - keep report/evidence text compact enough that it does not crowd the PDF
 - surface the research equation, replacement mechanism, challenge-to-module logic, and boundary-pushing ideas without hiding the underlying traceability
 
@@ -341,6 +348,9 @@ Use `scripts/build_and_serve_reader.py --artifact-manifest reader_artifacts.json
 
 The report must explicitly cover the following whenever the available materials support it.
 The detailed heuristics for the author-perspective sections live in [references/research-generative-methodology.md](references/research-generative-methodology.md).
+
+When writing formulas or math symbols in the report, wrap them in Markdown math delimiters (`$...$`, `$$...$$`, `\(...\)`, `\[...\]`) or math-like inline code so the reader builder can convert them to MathML.
+Do not leave naked LaTeX commands such as `\alpha`, `\theta`, `\sum`, or `\frac` in ordinary prose.
 
 ### 1. Paper identification and source package used
 
