@@ -83,9 +83,10 @@ When a user clicks a claim from any auxiliary card or index, the reader should s
 
 The built reader must display formulas and math symbols as rendered MathML, not raw LaTeX strings.
 The builder must preprocess report Markdown math delimiters (`$...$`, `$$...$$`, `\(...\)`, `\[...\]`) and math-like inline code before Markdown conversion.
+Short paper symbols written as inline code, including single-letter variables, bare subscripts/superscripts (`G_i`, `P_i^t`, `w_ij`), and Greek names (`alpha`, `phi_i`, `psi_i`), must render like equations rather than literal underscore text.
 The builder must also render math in claim text and evidence text.
 `latex2mathml` is a required dependency for successful math rendering.
-Do not treat a bundle containing `math-fallback` spans, raw math delimiters, or common raw LaTeX math commands as complete.
+Do not treat a bundle containing `math-fallback` spans, raw math delimiters, common raw LaTeX math commands, math-like code spans, or bare `_i`/`^t` symbols as complete.
 Run `scripts/validate_reader_math.py --bundle <reader_bundle>` after building and before serving or finalizing.
 
 ## Invariants

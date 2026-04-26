@@ -14,7 +14,22 @@ MATH_RENDERED_PATTERN = re.compile(
 DATA_LATEX_PATTERN = re.compile(r"\sdata-latex=(\"[^\"]*\"|'[^']*')", re.IGNORECASE)
 SCRIPT_STYLE_PATTERN = re.compile(r"<(script|style)\b[\s\S]*?</\1>", re.IGNORECASE)
 PRE_CODE_PATTERN = re.compile(r"<pre\b[\s\S]*?</pre>|<code\b[\s\S]*?</code>", re.IGNORECASE)
+PRE_BLOCK_PATTERN = re.compile(r"<pre\b[\s\S]*?</pre>", re.IGNORECASE)
+CODE_TAG_PATTERN = re.compile(r"<code\b[^>]*>([\s\S]*?)</code>", re.IGNORECASE)
 TAG_PATTERN = re.compile(r"<[^>]+>")
+GREEK_WORD = (
+    r"alpha|beta|gamma|delta|epsilon|varepsilon|zeta|eta|theta|vartheta|iota|kappa|"
+    r"lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|varphi|chi|psi|omega"
+)
+MATHLIKE_CODE_PATTERN = re.compile(
+    rf"^(?:[A-Za-z](?:[_^][A-Za-z0-9]+)+|(?:{GREEK_WORD})(?:[_^][A-Za-z0-9]+)*|[A-Za-z])$"
+)
+RAW_BACKTICK_SYMBOL_PATTERN = re.compile(
+    rf"`(?:[A-Za-z](?:[_^][A-Za-z0-9]+)+|(?:{GREEK_WORD})(?:[_^][A-Za-z0-9]+)*|[A-Za-z])`"
+)
+RAW_BARE_SUBSCRIPT_PATTERN = re.compile(
+    rf"\b(?:[A-Za-z]|{GREEK_WORD})_[A-Za-z0-9]+(?:\^[A-Za-z0-9]+)?\b"
+)
 RAW_DELIMITER_PATTERNS = [
     re.compile(r"\\\("),
     re.compile(r"\\\["),
@@ -42,7 +57,34 @@ def collect_raw_math_issues(label: str, html_text: str):
     if MATH_FALLBACK_PATTERN.search(html_text):
         issues.append({"source": label, "type": "math-fallback", "sample": "math-fallback"})
 
+    html_without_pre = PRE_BLOCK_PATTERN.sub(" ", html_text)
+    for code_match in CODE_TAG_PATTERN.finditer(html_without_pre):
+        code_text = html.unescape(TAG_PATTERN.sub("", code_match.group(1))).strip()
+        if MATHLIKE_CODE_PATTERN.fullmatch(code_text):
+            issues.append({"source": label, "type": "math-like-code", "sample": code_text})
+            break
+
     visible = visible_text_without_rendered_math(html_text)
+    backtick_match = RAW_BACKTICK_SYMBOL_PATTERN.search(visible)
+    if backtick_match:
+        issues.append(
+            {
+                "source": label,
+                "type": "raw-backtick-math-symbol",
+                "sample": visible[max(0, backtick_match.start() - 60) : backtick_match.end() + 60],
+            }
+        )
+
+    bare_subscript_match = RAW_BARE_SUBSCRIPT_PATTERN.search(visible)
+    if bare_subscript_match:
+        issues.append(
+            {
+                "source": label,
+                "type": "raw-bare-subscript",
+                "sample": visible[max(0, bare_subscript_match.start() - 60) : bare_subscript_match.end() + 60],
+            }
+        )
+
     for pattern in RAW_DELIMITER_PATTERNS:
         match = pattern.search(visible)
         if match:

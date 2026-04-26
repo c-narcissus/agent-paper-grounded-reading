@@ -53,8 +53,9 @@ Prefer these scripts instead of rewriting one-off PDF/reader code:
   Build the static reader from `reader_artifacts.json` or explicit arguments.
   In PDF-primary mode, it no longer needs a fake SyncTeX file when no `latex_paragraphs.json` is supplied.
   It preprocesses report Markdown math delimiters (`$...$`, `$$...$$`, `\(...\)`, `\[...\]`) and math-like inline code into MathML before writing `report.html`.
+  It treats bare paper symbols in inline code, such as `N`, `r`, `G_i`, `P_i^t`, `w_ij`, `alpha`, `phi_i`, and `psi_i`, as equations and normalizes Greek names plus multi-character subscripts before rendering.
 - `scripts/validate_reader_math.py`
-  Verify that the built reader bundle does not expose raw LaTeX math delimiters, common raw LaTeX math commands, or `math-fallback` spans in `report.html` and `evidence-map.json`.
+  Verify that the built reader bundle does not expose raw LaTeX math delimiters, common raw LaTeX math commands, math-like code spans, bare `_i`/`^t` style symbols, or `math-fallback` spans in `report.html` and `evidence-map.json`.
 - `scripts/build_and_serve_reader.py`
   Build the reader bundle, run `validate_reader_math.py`, launch `serve_bundle.py` in the background, wait for HTTP 200, and write `reader_url.txt`.
   Prefer this wrapper for the final mandatory reader step.
@@ -335,6 +336,7 @@ The bundled reader should then:
 - allow users to zoom PDF content in or out inside the fixed PDF pane without resizing the surrounding layout
 - render report and evidence formulas/symbols as readable MathML instead of raw LaTeX source when the source text contains equations
 - convert report-body `$...$`, `$$...$$`, `\(...\)`, `\[...\]`, and math-like inline code spans before Markdown conversion so the full right-side report does not leak raw LaTeX
+- render common paper symbols written as inline code (`G_i`, `P_i^t`, `w_ij`, `phi_i`, `psi_i`, `alpha`, single-letter variables such as `N` and `r`) in Word-equation-like form rather than as literal underscore text
 - require `validate_reader_math.py` to pass before treating the static reader as complete
 - keep report/evidence text compact enough that it does not crowd the PDF
 - surface the research equation, replacement mechanism, challenge-to-module logic, and boundary-pushing ideas without hiding the underlying traceability
@@ -349,7 +351,8 @@ Use `scripts/build_and_serve_reader.py --artifact-manifest reader_artifacts.json
 The report must explicitly cover the following whenever the available materials support it.
 The detailed heuristics for the author-perspective sections live in [references/research-generative-methodology.md](references/research-generative-methodology.md).
 
-When writing formulas or math symbols in the report, wrap them in Markdown math delimiters (`$...$`, `$$...$$`, `\(...\)`, `\[...\]`) or math-like inline code so the reader builder can convert them to MathML.
+When writing formulas or math symbols in the report, wrap formulas in Markdown math delimiters (`$...$`, `$$...$$`, `\(...\)`, `\[...\]`) or wrap short symbols in inline code so the reader builder can convert them to MathML.
+Use inline code for short paper symbols such as `G_i`, `P_i^t`, `w_ij`, `phi_i`, `psi_i`, `alpha`, `N`, and `r`; the builder will render them like Word equations.
 Do not leave naked LaTeX commands such as `\alpha`, `\theta`, `\sum`, or `\frac` in ordinary prose.
 
 ### 1. Paper identification and source package used

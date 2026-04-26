@@ -33,6 +33,39 @@ STANDALONE_INLINE_MATH_PATTERN = re.compile(
     re.DOTALL,
 )
 LATEX_COMMAND_PATTERN = re.compile(r"\\[A-Za-z]+")
+BASIC_SYMBOL_PATTERN = re.compile(r"^[A-Za-z](?:[_^][A-Za-z0-9]+)*$")
+GREEK_SYMBOL_PATTERN = re.compile(
+    r"^(alpha|beta|gamma|delta|epsilon|varepsilon|zeta|eta|theta|vartheta|iota|kappa|"
+    r"lambda|mu|nu|xi|pi|rho|sigma|tau|upsilon|phi|varphi|chi|psi|omega)(?:[_^][A-Za-z0-9]+)*$"
+)
+GREEK_SYMBOLS = {
+    "alpha",
+    "beta",
+    "gamma",
+    "delta",
+    "epsilon",
+    "varepsilon",
+    "zeta",
+    "eta",
+    "theta",
+    "vartheta",
+    "iota",
+    "kappa",
+    "lambda",
+    "mu",
+    "nu",
+    "xi",
+    "pi",
+    "rho",
+    "sigma",
+    "tau",
+    "upsilon",
+    "phi",
+    "varphi",
+    "chi",
+    "psi",
+    "omega",
+}
 ALLOW_MATH_FALLBACK = False
 
 
@@ -82,6 +115,10 @@ def looks_like_latex_math(value: str):
         return False
     if LATEX_COMMAND_PATTERN.search(stripped):
         return True
+    if BASIC_SYMBOL_PATTERN.fullmatch(stripped):
+        return True
+    if GREEK_SYMBOL_PATTERN.fullmatch(stripped):
+        return True
     if any(token in stripped for token in ("_{", "^{", "_{", "^")) and any(
         char.isalpha() for char in stripped
     ):
@@ -93,8 +130,23 @@ def looks_like_latex_math(value: str):
     return False
 
 
+def normalize_latex_math(latex: str):
+    normalized = latex.strip()
+    if not normalized:
+        return normalized
+
+    # Reports often use inline code like `G_i`, `phi_i`, or `alpha`.
+    # Convert these into LaTeX that renders like a Word equation.
+    for name in sorted(GREEK_SYMBOLS, key=len, reverse=True):
+        normalized = re.sub(rf"(?<!\\)(?<![A-Za-z]){name}(?=(_|\^|$))", rf"\\{name}", normalized)
+
+    normalized = re.sub(r"_([A-Za-z0-9]{2,})(?![A-Za-z0-9{])", r"_{\1}", normalized)
+    normalized = re.sub(r"\^([A-Za-z0-9]{2,})(?![A-Za-z0-9{])", r"^{\1}", normalized)
+    return normalized
+
+
 def render_math_markup(latex: str, display: str = "inline"):
-    cleaned = latex.strip()
+    cleaned = normalize_latex_math(latex)
     escaped = html.escape(cleaned, quote=True)
     if not cleaned:
         return ""
